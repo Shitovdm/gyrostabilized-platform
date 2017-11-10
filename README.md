@@ -1,0 +1,1 @@
+# gyrostabilized-platform
