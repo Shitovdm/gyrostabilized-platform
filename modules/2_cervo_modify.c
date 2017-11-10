@@ -2,94 +2,92 @@
 #include <delay.h>
 #include <mega8.h>
 #include <io.h>
-//=================================== АЦП ==================================
-
-
 
 void main() {
-	char mode=0; // Режим - по умолчанию 0
-	int direct=0;
+    char mode=0; // Режим - по умолчанию 0
+    int direct=0;
 
-	#define ICR_MAX 1000000/50  // ICR1(TOP) = fclk/(N*f) ; N-Делитель; f-Частота;  1000000/1/50 = 20000
-	#define OCR_MIN ICR_MAX/20
-	#define OCR_MAX ICR_MAX/10
-	#define OCR_CENTER (ICR_MAX/4/10)*3
+    #define ICR_MAX 1000000/50  // ICR1(TOP) = fclk/(N*f) ; N-Делитель; f-Частота;  1000000/1/50 = 20000
+    #define OCR_MIN 1100
+    #define OCR_MAX 1900
+    #define OCR_CENTER (OCR_MIN+OCR_MAX)/2
 
-	// На порту кнопки включаем подтягивающий резистор
-	DDRB &= ~(1<<4);
-	PORTB |= (1<<4);
+    // На порту кнопки включаем подтягивающий резистор
+    DDRB &= ~(1<<4);
+    PORTB |= (1<<4);
 
-	// Настраиваем порт светодиодов
-	DDRC = (1<<1) | (1<<2) | (1<<3);
-	PORTC |= (1<<(mode+1));
+    // Настраиваем порт светодиодов
+    DDRC = (1<<1) | (1<<2) | (1<<3);
+    PORTC |= (1<<(mode+1));
   
-	// Настраиваем PWM на тймере 1 (выход на ногах PB1, PB2)
-	TCCR1A = 0; // Отключаем PWM пока будем конфигурировать
-	ICR1 = ICR_MAX; // Частота всегда 50 Гц
+    // Настраиваем PWM на тймере 1 (выход на ногах PB1, PB2)
+    TCCR1A = 0; // Отключаем PWM пока будем конфигурировать
+    ICR1 = ICR_MAX; // Частота всегда 50 Гц
 
-	// Включаем Fast PWM mode via ICR1 на Таймере 1 без делителя частоты
-	TCCR1A = (1<<WGM11);
-	TCCR1B = (1<<WGM13) | (1<<WGM12) | (1<<CS10);
+    // Включаем Fast PWM mode via ICR1 на Таймере 1 без делителя частоты
+    TCCR1A = (1<<WGM11);
+    TCCR1B = (1<<WGM13) | (1<<WGM12) | (1<<CS10);
 
-	// Устанавливае PB1 и PB2 как выход
-	DDRB |= (1<<1) | (1<<2);
-	
-	// Включаем PWM на port B1 и B2
-	TCCR1A |= (1<<COM1A1) | (1<<COM1B1);
-	
+    // Устанавливае PB1 и PB2 как выход
+    DDRB |= (1<<1) | (1<<2);
+    
+    // Включаем PWM на port B1 и B2
+    TCCR1A |= (1<<COM1A1) | (1<<COM1B1);
+    
 
-	while(1){
-		// Если кнопка нажата (Переключение режимов)
-		if ((PINB & (1<<4)) == 0) 
-		{
-			// Ждем пока кнопку отпустят
-			while ((PINB & (1<<4)) == 0) {
-				delay_ms(200);
-			}
+    while(1){
+        // Если кнопка нажата (Переключение режимов)
+        if ((PINB & (1<<4)) == 0) 
+        {
+            // Ждем пока кнопку отпустят
+            while ((PINB & (1<<4)) == 0) {
+                delay_ms(200);
+            }
 
-			mode++;
-			if (mode > 2) {
-				mode = 0;
-			}
+            mode++;
+            if (mode > 2) {
+                mode = 0;
+            }
 
-			// Включаем нужный светодиод
-			PORTC &= ~((1<<1) | (1<<2) | (1<<3));
-			PORTC |= (1<<(mode+1));
-		}
+            // Включаем нужный светодиод
+            PORTC &= ~((1<<1) | (1<<2) | (1<<3));
+            PORTC |= (1<<(mode+1));
+        }
 
-		switch (mode){
-		case 0:{
-				// Задаем положени сервомеханизма, в зависимости от положения потенциометра adc_result
-				OCR1A = OCR_MIN+(1600 * (OCR_MAX-OCR_MIN)/1024);
-				OCR1B = OCR1A;
-				break;
-			}
-		case 1:{
-				// Задаем центральное положение сервомеханизма
-				direct=0;
-				OCR1A = OCR_CENTER;
-				OCR1B = OCR1A;
-				break;
-			}
-		case 2:{
-				// Циклическое изменение положения сервомашинки
-				if (direct==0){
-					OCR1A++;
-					OCR1B++;
-					if (OCR1A >= OCR_MAX) {
-						direct=1;
-					}
-				}
-				if (direct==1){
-					OCR1A--;
-					OCR1B--;
-					if (OCR1A <= OCR_MIN) {
-						direct=0;
-					}
-				}
-				delay_ms(1);
-				break;
-			}
-		}
-	}
+        switch (mode){
+        case 0:{
+                // Задаем положени сервомеханизма, в зависимости от положения потенциометра adc_result
+                //OCR1A = OCR_MIN+(512 * (OCR_MAX-OCR_MIN)/1024); 
+                OCR1A =  OCR_MIN; 
+                OCR1B = OCR1A;
+                break;
+            }
+        case 1:{
+                // Задаем центральное положение сервомеханизма
+                direct=0;
+                OCR1A = OCR_CENTER;
+                OCR1B = OCR1A;
+                break;
+            }
+        case 2:{
+                // Циклическое изменение положения сервомашинки
+                if (direct==0){
+                    OCR1A++;
+                    OCR1B++;
+                    if (OCR1A >= OCR_MAX) {
+                        direct=1;
+                    }
+                }
+                if (direct==1){
+                    OCR1A--;
+                    OCR1B--;
+                    if (OCR1A <= OCR_MIN) {
+                        direct=0;
+                    }
+                }
+                delay_ms(1);
+                break;
+            }
+        }
+    }
 }
