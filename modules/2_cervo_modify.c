@@ -3,7 +3,14 @@
 #include <mega8.h>
 #include <io.h>
 
+void timer2_init(void) {
+    TCCR2 |= (1 << COM21) | (1 << WGM21) | (1 << WGM20) | (1 << CS20);
+    TCNT2 = 0x00;
+    OCR2 = 0x00;
+}
+
 void main() {
+    
     char mode=0; // Режим - по умолчанию 0
     int direct=0;
 
@@ -20,7 +27,7 @@ void main() {
     DDRC = (1<<1) | (1<<2) | (1<<3);
     PORTC |= (1<<(mode+1));
   
-    // Настраиваем PWM на тймере 1 (выход на ногах PB1, PB2)
+    // Настраиваем PWM на тймере 1 (выход на ногах PB0, PB1, PB2)
     TCCR1A = 0; // Отключаем PWM пока будем конфигурировать
     ICR1 = ICR_MAX; // Частота всегда 50 Гц
 
@@ -28,18 +35,21 @@ void main() {
     TCCR1A = (1<<WGM11);
     TCCR1B = (1<<WGM13) | (1<<WGM12) | (1<<CS10);
 
-    // Устанавливае PB1 и PB2 как выход
-    DDRB |= (1<<1) | (1<<2);
+    // Устанавливае PB0, PB1 и PB2 как выход
+    DDRB |= (1<<0)|(1<<1)|(1<<2);
     
     // Включаем PWM на port B1 и B2
     TCCR1A |= (1<<COM1A1) | (1<<COM1B1);
+
+   
+ 
     
     /*** Настройка АЦП ***/
 ADCSRA |= (1 << ADEN)|(1 << ADPS1)|(1 << ADPS0);    // предделитель преобразователя на 8
 ADMUX |= (0 << REFS1)|(0 << REFS0)|(0 << MUX0)|(0 << MUX1)|(0 << MUX2)|(0 << MUX3); // вход PC0
     DDRD = 0xFF;
     PORTD = 0x00;
-
+    timer2_init();
     while(1){
         // Работа с АЦП.
         unsigned int u;
@@ -92,16 +102,19 @@ ADMUX |= (0 << REFS1)|(0 << REFS0)|(0 << MUX0)|(0 << MUX1)|(0 << MUX2)|(0 << MUX
         switch (mode){
         case 0:{
                 // Задаем положени сервомеханизма, в зависимости от положения потенциометра adc_result
-                //OCR1A = OCR_MIN+(512 * (OCR_MAX-OCR_MIN)/1024); 
+                // 0.78 коэф связи ширины импульса и величины АЦП.
                 OCR1A =  1100+(0.78*u); 
-                OCR1B = OCR1A;
+                OCR1B =  1900-(0.78*u);
+                
+                //OCR1B = OCR1A; 
                 break;
             }
         case 1:{
                 // Задаем центральное положение сервомеханизма
-                direct=0;
+                direct = 0;
                 OCR1A = OCR_CENTER;
                 OCR1B = OCR1A;
+                
                 break;
             }
         case 2:{
@@ -126,3 +139,4 @@ ADMUX |= (0 << REFS1)|(0 << REFS0)|(0 << MUX0)|(0 << MUX1)|(0 << MUX2)|(0 << MUX
         }
     }
 }
+
