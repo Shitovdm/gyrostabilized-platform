@@ -28,39 +28,46 @@ fopen(s);
 
 figure();
 angle1 = [];
-angle2 = [];
-angle3 = [];
-x = [];
 counter = 1;
-
- while counter<1000
-      A = fread(s);
-      if A(1)==255
-        angles_hex=dec2hex(A);
-        b=cellstr(angles_hex);
-    
-        a1_hex=strcat(b(12),b(11),b(10),b(9));
-        a2_hex=strcat(b(16),b(15),b(14),b(13));
-        a3_hex=strcat(b(20),b(19),b(18),b(17));
-
-        fl = typecast(uint32(hex2dec(a1_hex)), 'single');
-        f2 = typecast(uint32(hex2dec(a2_hex)), 'single');
-        f3 = typecast(uint32(hex2dec(a3_hex)), 'single');
-        
-        angle1(counter)=fl;
-        angle2(counter)=f2; 
-        angle3(counter)=f3;
-        
-        x(counter) = counter;
-        
-        plot(x,angle1,x,angle2,x,angle3);
-        drawnow
-        counter = counter+1; 
-      else
-          fclose(s);
-          fopen(s);
+cnt2 = 1;
+readFlag = true;
+%  while counter<10000
+while 1==1
+      if readFlag==true
+        A = fread(s);
       end
-  end
+      if (counter==50)
+          readFlag = false;
+        if A(1)==255
+            
+            if cnt2==50
+                cnt2=1;
+                angle1 = [];
+            end
+            
+            angles_hex=dec2hex(A);
+            b=cellstr(angles_hex);
+            a1_hex=strcat(b(16),b(15),b(14),b(13));
+            fl = typecast(uint32(hex2dec(a1_hex)), 'single');
+            if (fl<180)
+                angle1(cnt2)=fl;
+            end
+            cnt2 = cnt2 + 1; 
+            plot(angle1);
+            drawnow
+            counter=0;
+            readFlag = true;
+        else
+%             fclose(s);
+%             fopen(s);
+%             fclose(instrfind);
+        end
+      end
+      counter = counter+1;
+ end
+
+ 
 fclose(s);
+fclose(instrfind);
 end
 
