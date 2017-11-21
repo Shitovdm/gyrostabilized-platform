@@ -1,28 +1,28 @@
 function [ rd ] = reading()
-% Настройка COM порта.
+% COM port settings.
 s = serial('COM4');
 set(s,'BaudRate',921600);
 set(s,'InputBufferSize',24); 
 set(s,'TimeOut',10); 
 
 fopen(s);
-% Значения ОХ.
+% OX values.
 counter = [];
 for j=1:100
     counter(j) = j;
 end
-% Считываем начальные значения и строим по ним графики.
+% Start 99 values.
 for i = 1:100
     A = fread(s);
     angles_hex=dec2hex(A);
     b=cellstr(angles_hex);
-    % Наклон.
+    % Pitch.
     pitch_hex=strcat(b(12),b(11),b(10),b(9));
     fl = typecast(uint32(hex2dec(pitch_hex)), 'single');
-    % Крен.
+    % Roll.
     roll_hex=strcat(b(16),b(15),b(14),b(13));
     f2 = typecast(uint32(hex2dec(roll_hex)), 'single');
-    % Курс.
+    % Yaw.
     yaw_hex=strcat(b(20),b(19),b(18),b(17));
     f3 = typecast(uint32(hex2dec(yaw_hex)), 'single');
     
@@ -32,7 +32,7 @@ for i = 1:100
 end
 figure();
 plot(counter,pitch,counter,roll,counter,yaw);
-% Обновляем графики.
+% Refreshing plots.
    while 1==1
       A = fread(s);
       if A(1)==255
