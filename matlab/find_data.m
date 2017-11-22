@@ -27,45 +27,52 @@ fopen(s);
 % plot(x,angle1,x,angle2);
 
 figure();
-angle1 = [];
-counter = 1;
-cnt2 = 1;
-readFlag = true;
-%  while counter<10000
-while 1==1
-      if readFlag==true
-        A = fread(s);
-      end
-      if (counter==50)
-          readFlag = false;
-        if A(1)==255
-            
-            if cnt2==50
-                cnt2=1;
-                angle1 = [];
-            end
-            
-            angles_hex=dec2hex(A);
-            b=cellstr(angles_hex);
-            a1_hex=strcat(b(16),b(15),b(14),b(13));
-            fl = typecast(uint32(hex2dec(a1_hex)), 'single');
-            if (fl<180)
-                angle1(cnt2)=fl;
-            end
-            cnt2 = cnt2 + 1; 
-            plot(angle1);
-            drawnow
-            counter=0;
-            readFlag = true;
-        else
-%             fclose(s);
-%             fopen(s);
-%             fclose(instrfind);
-        end
-      end
-      counter = counter+1;
- end
+angle = [];
+cnt = 1;
 
+while 1==1
+      A = fread(s);
+      if A(1)==255
+        angles_hex=dec2hex(A);
+        b=cellstr(angles_hex);
+        a1_hex=strcat(b(16),b(15),b(14),b(13));
+        fl = typecast(uint32(hex2dec(a1_hex)), 'single');
+        
+        angle(cnt) = f1;
+        plot(angle);
+        drawnow
+        cnt = cnt + 1; 
+      else
+        fclose(s);
+        fopen(s);
+        fclose(instrfind);  
+      end
+      
+%       if (counter==50)
+%           readFlag = false;
+%         if A(1)==255
+%             
+%             if cnt2==50
+%                 cnt2=1;
+%                 angle1 = [];
+%             end
+%             
+%             angles_hex=dec2hex(A);
+%             b=cellstr(angles_hex);
+%             a1_hex=strcat(b(16),b(15),b(14),b(13));
+%             fl = typecast(uint32(hex2dec(a1_hex)), 'single');
+%             cnt2 = cnt2 + 1; 
+%             plot(angle1);
+%             drawnow
+%             counter=0;
+%             readFlag = true;
+%         else
+%              fclose(s);
+%              fopen(s);
+%              fclose(instrfind);
+%         end
+
+ end
  
 fclose(s);
 fclose(instrfind);
