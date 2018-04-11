@@ -38,8 +38,8 @@ PORTB = 0;
 while (1){
     //ќсновной цикл в котором мен€ютс€ значени€ angle1, angle2, angle3, angle4  
     while(angle1<1900){
-        //angle1 = angle1+0,01;
-        //angle2 = angle1+1;
+        angle1 = angle1+0,01;
+        angle2 = angle1+1;
         delay_ms(1000);
     }
     angle1 = 1100;

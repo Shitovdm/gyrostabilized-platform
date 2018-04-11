@@ -35,9 +35,11 @@ plot(counter,pitch,counter,roll,counter,yaw);
 % Refreshing plots.
    while 1==1
       A = fread(s);
+      
       if A(1)==255
           angle_hex=dec2hex(A);
           b=cellstr(angle_hex);
+          %strcat(b(1),b(2),b(3),b(4),b(5),b(6),b(7),b(8),b(9),b(10),b(11),b(12),b(13),b(14),b(15),b(16),b(17),b(18),b(19),b(20),b(21),b(22),b(23),b(24))
           pitch_hex=strcat(b(12),b(11),b(10),b(9));
           fl = typecast(uint32(hex2dec(pitch_hex)), 'single');     
           
@@ -45,6 +47,8 @@ plot(counter,pitch,counter,roll,counter,yaw);
           f2 = typecast(uint32(hex2dec(roll_hex)), 'single');
           
           yaw_hex=strcat(b(20),b(19),b(18),b(17));
+          yaw_hex
+          %typecast(uint32(hex2dec("3d383b98")), 'single')
           f3 = typecast(uint32(hex2dec(yaw_hex)), 'single');
           
           for j=1:99
@@ -59,7 +63,9 @@ plot(counter,pitch,counter,roll,counter,yaw);
             % angle3 - yaw
             % angle2 - roll
             % angle1 - pitch
-          plot(counter,pitch,counter,roll,counter,yaw);
+          % plot(counter,pitch,counter,roll,counter,yaw);
+          %yaw
+          plot(counter,yaw);
           %plot(counter,angle1);
           drawnow
       else
