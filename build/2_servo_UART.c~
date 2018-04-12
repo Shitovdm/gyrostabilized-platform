@@ -22,7 +22,7 @@ Data Stack size         : 256
 *******************************************************/
 
 #include <mega8.h>
-#include <delay.h>
+
 // Declare your global variables here
 
 #define DATA_REGISTER_EMPTY (1<<UDRE)

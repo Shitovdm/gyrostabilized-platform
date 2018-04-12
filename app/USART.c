@@ -23,6 +23,7 @@ Data Stack size         : 256
 
 #include <mega8.h>
 #include <delay.h>
+
 // Declare your global variables here
 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
@@ -77,35 +78,74 @@ if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0)
 // Get a character from the USART Receiver buffer
 #define _ALTERNATE_GETCHAR_
 #pragma used+
-char getchar(void)
-{
-char data;
-while (rx_counter==0);
-data=rx_buffer[rx_rd_index++];
-#if RX_BUFFER_SIZE != 256
-if (rx_rd_index == RX_BUFFER_SIZE) rx_rd_index=0;
+char getchar(void){
+    char data;
+    while (rx_counter==0);
+    data=rx_buffer[rx_rd_index++];
+    #if RX_BUFFER_SIZE != 256
+    if (rx_rd_index == RX_BUFFER_SIZE) rx_rd_index=0;
+    #endif
+    #asm("cli")
+    --rx_counter;
+    #asm("sei")
+    return data;
+}
+#pragma used-
 #endif
-#asm("cli")
---rx_counter;
-#asm("sei")
-return data;
+
+// USART Transmitter buffer
+#define TX_BUFFER_SIZE 28
+char tx_buffer[TX_BUFFER_SIZE];
+
+#if TX_BUFFER_SIZE <= 256
+unsigned char tx_wr_index=0,tx_rd_index=0;
+#else
+unsigned int tx_wr_index=0,tx_rd_index=0;
+#endif
+
+#if TX_BUFFER_SIZE < 256
+unsigned char tx_counter=0;
+#else
+unsigned int tx_counter=0;
+#endif
+
+// USART Transmitter interrupt service routine
+interrupt [USART_TXC] void usart_tx_isr(void)
+{
+if (tx_counter)
+   {
+   --tx_counter;
+   UDR=tx_buffer[tx_rd_index++];
+#if TX_BUFFER_SIZE != 256
+   if (tx_rd_index == TX_BUFFER_SIZE) tx_rd_index=0;
+#endif
+   }
+}
+
+#ifndef _DEBUG_TERMINAL_IO_
+// Write a character to the USART Transmitter buffer
+#define _ALTERNATE_PUTCHAR_
+#pragma used+
+void putchar(char c){
+    while (tx_counter == TX_BUFFER_SIZE);
+    #asm("cli")
+    if (tx_counter || ((UCSRA & DATA_REGISTER_EMPTY)==0))
+       {
+       tx_buffer[tx_wr_index++]=c;
+    #if TX_BUFFER_SIZE != 256
+       if (tx_wr_index == TX_BUFFER_SIZE) tx_wr_index=0;
+    #endif
+       ++tx_counter;
+       }
+    else
+       UDR=c;
+    #asm("sei")
 }
 #pragma used-
 #endif
 
 // Standard Input/Output functions
 #include <stdio.h>
-
-
-
-
-void USART_Transmit( unsigned char data ) //Функция отправки данных
-{
-    while ( !(UCSRA & (1<<UDRE)) ); //Ожидание опустошения буфера приема
-        UDR = data; //Начало передачи данных			        
-}
-
-
 
 void main(void)
 {
@@ -180,11 +220,11 @@ MCUCR=(0<<ISC11) | (0<<ISC10) | (0<<ISC01) | (0<<ISC00);
 // USART initialization
 // Communication Parameters: 8 Data, 1 Stop, No Parity
 // USART Receiver: On
-// USART Transmitter: Off
+// USART Transmitter: On
 // USART Mode: Asynchronous
 // USART Baud Rate: 9600
 UCSRA=(0<<RXC) | (0<<TXC) | (0<<UDRE) | (0<<FE) | (0<<DOR) | (0<<UPE) | (0<<U2X) | (0<<MPCM);
-UCSRB=(1<<RXCIE) | (0<<TXCIE) | (0<<UDRIE) | (1<<RXEN) | (0<<TXEN) | (0<<UCSZ2) | (0<<RXB8) | (0<<TXB8);
+UCSRB=(1<<RXCIE) | (1<<TXCIE) | (0<<UDRIE) | (1<<RXEN) | (1<<TXEN) | (0<<UCSZ2) | (0<<RXB8) | (0<<TXB8);
 UCSRC=(1<<URSEL) | (0<<UMSEL) | (0<<UPM1) | (0<<UPM0) | (0<<USBS) | (1<<UCSZ1) | (1<<UCSZ0) | (0<<UCPOL);
 UBRRH=0x00;
 UBRRL=0x33;
@@ -215,8 +255,12 @@ TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
 
 while (1)
       {
-      // Place your code here
-      USART_Transmit('k');
-      delay_ms(200);
+      // Place your code here  
+      
+             putchar(getchar());  
+             putchar(getchar());
+
+             
+             //delay_ms(500);
       }
 }
