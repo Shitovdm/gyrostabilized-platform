@@ -1,8 +1,8 @@
 function [ rd ] = reading()
 % COM port settings.
 s = serial('COM4');
-set(s,'BaudRate',921600);
-set(s,'InputBufferSize',24); 
+set(s,'BaudRate',115200);
+set(s,'InputBufferSize',28); 
 set(s,'TimeOut',10); 
 
 fopen(s);
@@ -23,7 +23,7 @@ for i = 1:100
     roll_hex=strcat(b(16),b(15),b(14),b(13));
     f2 = typecast(uint32(hex2dec(roll_hex)), 'single');
     % Yaw.
-    yaw_hex=strcat(b(20),b(19),b(18),b(17));
+    yaw_hex=strcat(b(24),b(23),b(22),b(21));
     f3 = typecast(uint32(hex2dec(yaw_hex)), 'single');
     
     pitch(i)=fl;
@@ -47,10 +47,11 @@ plot(counter,pitch,counter,roll,counter,yaw);
           f2 = typecast(uint32(hex2dec(roll_hex)), 'single');
           
           yaw_hex=strcat(b(20),b(19),b(18),b(17));
-          yaw_hex
+          
           %typecast(uint32(hex2dec("3d383b98")), 'single')
           f3 = typecast(uint32(hex2dec(yaw_hex)), 'single');
-          
+          yaw_hex 
+          f3 
           for j=1:99
               pitch(j)=pitch(j+1);
               roll(j)=roll(j+1);

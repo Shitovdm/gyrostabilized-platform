@@ -265,7 +265,7 @@ RXBuffer0=28
 TXEnabled0=1
 TXInterrupt0=1
 TXBuffer0=28
-BaudRate0=115200
+BaudRate0=9600
 DoubleBaud0=0
 CommParameters0=3
 USARTMode0=0
@@ -497,7 +497,7 @@ DS1302ChargeResistor=0
 [ProjectInformation]
 ProjectName=
 ProjectVersion=
-ProjectDate=13.04.2018
+ProjectDate=12.04.2018
 ProjectAuthor=
 ProjectCompany=
 CommentLines=0

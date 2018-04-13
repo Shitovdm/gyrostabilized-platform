@@ -7,7 +7,7 @@ http://www.hpinfotech.com
 
 Project : 
 Version : 
-Date    : 12.04.2018
+Date    : 13.04.2018
 Author  : 
 Company : 
 Comments: 
@@ -23,7 +23,8 @@ Data Stack size         : 256
 
 #include <mega8.h>
 #include <delay.h>
-
+#include <string.h>
+#include <inttypes.h>
 // Declare your global variables here
 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
@@ -52,26 +53,25 @@ unsigned int rx_counter=0;
 bit rx_buffer_overflow;
 
 // USART Receiver interrupt service routine
-interrupt [USART_RXC] void usart_rx_isr(void)
-{
-char status,data;
-status=UCSRA;
-data=UDR;
-if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0)
-   {
-   rx_buffer[rx_wr_index++]=data;
-#if RX_BUFFER_SIZE == 256
-   // special case for receiver buffer size=256
-   if (++rx_counter == 0) rx_buffer_overflow=1;
-#else
-   if (rx_wr_index == RX_BUFFER_SIZE) rx_wr_index=0;
-   if (++rx_counter == RX_BUFFER_SIZE)
-      {
-      rx_counter=0;
-      rx_buffer_overflow=1;
-      }
-#endif
-   }
+interrupt [USART_RXC] void usart_rx_isr(void){
+    char status,data;
+    status=UCSRA;
+    data=UDR;
+    if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0)
+       {
+       rx_buffer[rx_wr_index++]=data;
+    #if RX_BUFFER_SIZE == 256
+       // special case for receiver buffer size=256
+       if (++rx_counter == 0) rx_buffer_overflow=1;
+    #else
+       if (rx_wr_index == RX_BUFFER_SIZE) rx_wr_index=0;
+       if (++rx_counter == RX_BUFFER_SIZE)
+          {
+          rx_counter=0;
+          rx_buffer_overflow=1;
+          }
+    #endif
+       }
 }
 
 #ifndef _DEBUG_TERMINAL_IO_
@@ -110,16 +110,15 @@ unsigned int tx_counter=0;
 #endif
 
 // USART Transmitter interrupt service routine
-interrupt [USART_TXC] void usart_tx_isr(void)
-{
-if (tx_counter)
-   {
-   --tx_counter;
-   UDR=tx_buffer[tx_rd_index++];
-#if TX_BUFFER_SIZE != 256
-   if (tx_rd_index == TX_BUFFER_SIZE) tx_rd_index=0;
-#endif
-   }
+interrupt [USART_TXC] void usart_tx_isr(void){
+    if (tx_counter)
+       {
+       --tx_counter;
+       UDR=tx_buffer[tx_rd_index++];
+    #if TX_BUFFER_SIZE != 256
+       if (tx_rd_index == TX_BUFFER_SIZE) tx_rd_index=0;
+    #endif
+       }
 }
 
 #ifndef _DEBUG_TERMINAL_IO_
@@ -147,10 +146,40 @@ void putchar(char c){
 // Standard Input/Output functions
 #include <stdio.h>
 
+
+void write_float(float f){
+    unsigned char *ptr;
+    char j;
+    ptr = (unsigned char *)&f;
+    for (j=0;j<4;j++){
+        while(!(UCSRA&(1<<UDRE))){};
+        UDR = *(ptr+j);
+    }
+}
+
+
+void send_UART(char value) {
+    while(!( UCSRA & (1 << UDRE)));   // Ожидаем когда очистится буфер передачи
+    UDR = value; // Помещаем данные в буфер, начинаем передачу
+}
+
+
 void main(void)
 {
 // Declare your local variables here
+int _counter = 1;
+char _data;
+int pocket_len = 28;
+char pocket_data[pocket_len];
+char pitch_hex[4];
+float pitch_float;
 
+//int i = 0x42ED4000;
+//float f;
+//memcpy(&i,&f,sizeof f);
+float f = 122.221;
+
+        
 // Input/Output Ports initialization
 // Port B initialization
 // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In 
@@ -222,12 +251,12 @@ MCUCR=(0<<ISC11) | (0<<ISC10) | (0<<ISC01) | (0<<ISC00);
 // USART Receiver: On
 // USART Transmitter: On
 // USART Mode: Asynchronous
-// USART Baud Rate: 9600
+// USART Baud Rate: 115200
 UCSRA=(0<<RXC) | (0<<TXC) | (0<<UDRE) | (0<<FE) | (0<<DOR) | (0<<UPE) | (0<<U2X) | (0<<MPCM);
 UCSRB=(1<<RXCIE) | (1<<TXCIE) | (0<<UDRIE) | (1<<RXEN) | (1<<TXEN) | (0<<UCSZ2) | (0<<RXB8) | (0<<TXB8);
 UCSRC=(1<<URSEL) | (0<<UMSEL) | (0<<UPM1) | (0<<UPM0) | (0<<USBS) | (1<<UCSZ1) | (1<<UCSZ0) | (0<<UCPOL);
 UBRRH=0x00;
-UBRRL=0x33;
+UBRRL=0x03;
 
 // Analog Comparator initialization
 // Analog Comparator: Off
@@ -254,21 +283,38 @@ TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
 #asm("sei")
 
 while (1)
-      {
-      // Place your code here  
-      
-             putchar(rx_buffer[0]);  
-             putchar(rx_buffer[1]);
-             putchar(rx_buffer[2]);
-             putchar(rx_buffer[3]);
-             putchar(rx_buffer[4]);
-             putchar(rx_buffer[5]);  
-             putchar(rx_buffer[6]);
-             putchar(rx_buffer[7]);
-             putchar(rx_buffer[8]);
-             putchar(rx_buffer[9]);
+      { /*
+      // Place your code here 
+        _data = getchar();
+        if(_data == 0xFF){  //  Находим преамбулу.  
+            pocket_data[0] =  _data; // Включаем преамбулу в пакет.
+            while(_counter < 27){ 
+                pocket_data[_counter] = getchar();  //  Формируем полный пакет.
+                putchar(getchar()); 
+                _counter++;
+            }
+            _counter = 0;  //   Обнуляем счетчик данных в пакете.
+        }  */
+        
+         
+        printf("%f", 125.445);
+         //  Достаем необходимые данных из пакета.
 
+        // 3C25C43D == 0.0101
+
+        //send_UART(12.23);
+         
+        //uint8_t *pocket_data = (uint8_t *)&pitch_float;
+        
+        //strcat(pitch_hex, (pocket_data[24])); 
+        //pitch_hex=strcat(pocket_data[24]); 
+        //pitch_float = typecast(uint32(hex2dec(pitch_hex)), 'single');
+        
              
-             //delay_ms(500);
+            
+             
+             //putchar(getchar());
+             
+             //delay_ms(200);
       }
 }
