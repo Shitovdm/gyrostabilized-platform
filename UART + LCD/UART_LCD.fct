@@ -1,0 +1,7 @@
+main DSTACK_USAGE:0 DSTACK_LEVEL:0 FILE:"UART_LCD.c" LINE:155
+lcd_putsf DSTACK_USAGE:3 DSTACK_LEVEL:3 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\alcd.lib" LINE:286
+lcd_putchar DSTACK_USAGE:1 DSTACK_LEVEL:4 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\alcd.lib" LINE:265
+lcd_gotoxy DSTACK_USAGE:2 DSTACK_LEVEL:6 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\alcd.lib" LINE:247
+_lcd_write_data DSTACK_USAGE:1 DSTACK_LEVEL:7 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\alcd.lib" LINE:161
+_lcd_write_nibble DSTACK_USAGE:1 DSTACK_LEVEL:8 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\alcd.lib" LINE:139
+usart_rx_isr DSTACK_USAGE:5 DSTACK_LEVEL:13 FILE:"UART_LCD.c" LINE:58

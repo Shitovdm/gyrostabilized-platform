@@ -388,18 +388,21 @@
 ; 0000 00AD char pocket_data[pocket_len];
 ; 0000 00AE char pitch_hex[4];
 ; 0000 00AF float pitch_float;
-; 0000 00B0 
-; 0000 00B1 //int i = 0x42ED4000;
-; 0000 00B2 //float f;
-; 0000 00B3 //memcpy(&i,&f,sizeof f);
-; 0000 00B4 float f = 122.221;
-; 0000 00B5 
-; 0000 00B6 
-; 0000 00B7 // Input/Output Ports initialization
-; 0000 00B8 // Port B initialization
-; 0000 00B9 // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
-; 0000 00BA DDRB=(0<<DDB7) | (0<<DDB6) | (0<<DDB5) | (0<<DDB4) | (0<<DDB3) | (0<<DDB2) | (0<<DDB1) | (0<<DDB0);
+; 0000 00B0 char _readingComplete = 1;
+; 0000 00B1 
+; 0000 00B2 
+; 0000 00B3 // Input/Output Ports initialization
+; 0000 00B4 // Port B initialization
+; 0000 00B5 // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
+; 0000 00B6 DDRB=(0<<DDB7) | (0<<DDB6) | (0<<DDB5) | (0<<DDB4) | (0<<DDB3) | (0<<DDB2) | (0<<DDB1) | (0<<DDB0);
 ;PCODE: $000000B8 VOL: 0
+;	_counter -> R16,R17
+;	_data -> R19
+;	pocket_len -> R20,R21
+;	pocket_data -> Y+8
+;	pitch_hex -> Y+4
+;	pitch_float -> Y+0
+;	_readingComplete -> R18
 ;PCODE: $000000B9 VOL: 0
 ;PCODE: $000000BA VOL: 0
 ;PCODE: $000000BB VOL: 0
@@ -408,206 +411,191 @@
 ;PCODE: $000000BE VOL: 0
 ;PCODE: $000000BF VOL: 0
 ;PCODE: $000000C0 VOL: 0
-;	_counter -> R16,R17
-;	_data -> R19
-;	pocket_len -> R20,R21
-;	pocket_data -> Y+12
-;	pitch_hex -> Y+8
-;	pitch_float -> Y+4
-;	f -> Y+0
+; 0000 00B7 // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
+; 0000 00B8 PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (0<<PORTB3) | (0<<PORTB2) | (0<<PORTB1) | (0<<PORTB0);
 ;PCODE: $000000C1 VOL: 0
 ;PCODE: $000000C2 VOL: 0
+; 0000 00B9 
+; 0000 00BA // Port C initialization
+; 0000 00BB // Function: Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
+; 0000 00BC DDRC=(0<<DDC6) | (0<<DDC5) | (0<<DDC4) | (0<<DDC3) | (0<<DDC2) | (0<<DDC1) | (0<<DDC0);
 ;PCODE: $000000C3 VOL: 0
 ;PCODE: $000000C4 VOL: 0
+; 0000 00BD // State: Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
+; 0000 00BE PORTC=(0<<PORTC6) | (0<<PORTC5) | (0<<PORTC4) | (0<<PORTC3) | (0<<PORTC2) | (0<<PORTC1) | (0<<PORTC0);
 ;PCODE: $000000C5 VOL: 0
 ;PCODE: $000000C6 VOL: 0
-; 0000 00BB // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
-; 0000 00BC PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (0<<PORTB3) | (0<<PORTB2) | (0<<PORTB1) | (0<<PORTB0);
+; 0000 00BF 
+; 0000 00C0 // Port D initialization
+; 0000 00C1 // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
+; 0000 00C2 DDRD=(0<<DDD7) | (0<<DDD6) | (0<<DDD5) | (0<<DDD4) | (0<<DDD3) | (0<<DDD2) | (0<<DDD1) | (0<<DDD0);
 ;PCODE: $000000C7 VOL: 0
 ;PCODE: $000000C8 VOL: 0
-; 0000 00BD 
-; 0000 00BE // Port C initialization
-; 0000 00BF // Function: Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
-; 0000 00C0 DDRC=(0<<DDC6) | (0<<DDC5) | (0<<DDC4) | (0<<DDC3) | (0<<DDC2) | (0<<DDC1) | (0<<DDC0);
+; 0000 00C3 // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
+; 0000 00C4 PORTD=(0<<PORTD7) | (0<<PORTD6) | (0<<PORTD5) | (0<<PORTD4) | (0<<PORTD3) | (0<<PORTD2) | (0<<PORTD1) | (0<<PORTD0);
 ;PCODE: $000000C9 VOL: 0
 ;PCODE: $000000CA VOL: 0
-; 0000 00C1 // State: Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
-; 0000 00C2 PORTC=(0<<PORTC6) | (0<<PORTC5) | (0<<PORTC4) | (0<<PORTC3) | (0<<PORTC2) | (0<<PORTC1) | (0<<PORTC0);
+; 0000 00C5 
+; 0000 00C6 // Timer/Counter 0 initialization
+; 0000 00C7 // Clock source: System Clock
+; 0000 00C8 // Clock value: Timer 0 Stopped
+; 0000 00C9 TCCR0=(0<<CS02) | (0<<CS01) | (0<<CS00);
 ;PCODE: $000000CB VOL: 0
 ;PCODE: $000000CC VOL: 0
-; 0000 00C3 
-; 0000 00C4 // Port D initialization
-; 0000 00C5 // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
-; 0000 00C6 DDRD=(0<<DDD7) | (0<<DDD6) | (0<<DDD5) | (0<<DDD4) | (0<<DDD3) | (0<<DDD2) | (0<<DDD1) | (0<<DDD0);
+; 0000 00CA TCNT0=0x00;
 ;PCODE: $000000CD VOL: 0
 ;PCODE: $000000CE VOL: 0
-; 0000 00C7 // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
-; 0000 00C8 PORTD=(0<<PORTD7) | (0<<PORTD6) | (0<<PORTD5) | (0<<PORTD4) | (0<<PORTD3) | (0<<PORTD2) | (0<<PORTD1) | (0<<PORTD0);
+; 0000 00CB 
+; 0000 00CC // Timer/Counter 1 initialization
+; 0000 00CD // Clock source: System Clock
+; 0000 00CE // Clock value: Timer1 Stopped
+; 0000 00CF // Mode: Normal top=0xFFFF
+; 0000 00D0 // OC1A output: Disconnected
+; 0000 00D1 // OC1B output: Disconnected
+; 0000 00D2 // Noise Canceler: Off
+; 0000 00D3 // Input Capture on Falling Edge
+; 0000 00D4 // Timer1 Overflow Interrupt: Off
+; 0000 00D5 // Input Capture Interrupt: Off
+; 0000 00D6 // Compare A Match Interrupt: Off
+; 0000 00D7 // Compare B Match Interrupt: Off
+; 0000 00D8 TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
 ;PCODE: $000000CF VOL: 0
 ;PCODE: $000000D0 VOL: 0
-; 0000 00C9 
-; 0000 00CA // Timer/Counter 0 initialization
-; 0000 00CB // Clock source: System Clock
-; 0000 00CC // Clock value: Timer 0 Stopped
-; 0000 00CD TCCR0=(0<<CS02) | (0<<CS01) | (0<<CS00);
+; 0000 00D9 TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (0<<WGM12) | (0<<CS12) | (0<<CS11) | (0<<CS10);
 ;PCODE: $000000D1 VOL: 0
 ;PCODE: $000000D2 VOL: 0
-; 0000 00CE TCNT0=0x00;
+; 0000 00DA TCNT1H=0x00;
 ;PCODE: $000000D3 VOL: 0
 ;PCODE: $000000D4 VOL: 0
-; 0000 00CF 
-; 0000 00D0 // Timer/Counter 1 initialization
-; 0000 00D1 // Clock source: System Clock
-; 0000 00D2 // Clock value: Timer1 Stopped
-; 0000 00D3 // Mode: Normal top=0xFFFF
-; 0000 00D4 // OC1A output: Disconnected
-; 0000 00D5 // OC1B output: Disconnected
-; 0000 00D6 // Noise Canceler: Off
-; 0000 00D7 // Input Capture on Falling Edge
-; 0000 00D8 // Timer1 Overflow Interrupt: Off
-; 0000 00D9 // Input Capture Interrupt: Off
-; 0000 00DA // Compare A Match Interrupt: Off
-; 0000 00DB // Compare B Match Interrupt: Off
-; 0000 00DC TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
+; 0000 00DB TCNT1L=0x00;
 ;PCODE: $000000D5 VOL: 0
 ;PCODE: $000000D6 VOL: 0
-; 0000 00DD TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (0<<WGM12) | (0<<CS12) | (0<<CS11) | (0<<CS10);
+; 0000 00DC ICR1H=0x00;
 ;PCODE: $000000D7 VOL: 0
 ;PCODE: $000000D8 VOL: 0
-; 0000 00DE TCNT1H=0x00;
+; 0000 00DD ICR1L=0x00;
 ;PCODE: $000000D9 VOL: 0
 ;PCODE: $000000DA VOL: 0
-; 0000 00DF TCNT1L=0x00;
+; 0000 00DE OCR1AH=0x00;
 ;PCODE: $000000DB VOL: 0
 ;PCODE: $000000DC VOL: 0
-; 0000 00E0 ICR1H=0x00;
+; 0000 00DF OCR1AL=0x00;
 ;PCODE: $000000DD VOL: 0
 ;PCODE: $000000DE VOL: 0
-; 0000 00E1 ICR1L=0x00;
+; 0000 00E0 OCR1BH=0x00;
 ;PCODE: $000000DF VOL: 0
 ;PCODE: $000000E0 VOL: 0
-; 0000 00E2 OCR1AH=0x00;
+; 0000 00E1 OCR1BL=0x00;
 ;PCODE: $000000E1 VOL: 0
 ;PCODE: $000000E2 VOL: 0
-; 0000 00E3 OCR1AL=0x00;
+; 0000 00E2 
+; 0000 00E3 // Timer/Counter 2 initialization
+; 0000 00E4 // Clock source: System Clock
+; 0000 00E5 // Clock value: Timer2 Stopped
+; 0000 00E6 // Mode: Normal top=0xFF
+; 0000 00E7 // OC2 output: Disconnected
+; 0000 00E8 ASSR=0<<AS2;
 ;PCODE: $000000E3 VOL: 0
 ;PCODE: $000000E4 VOL: 0
-; 0000 00E4 OCR1BH=0x00;
+; 0000 00E9 TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (0<<CTC2) | (0<<CS22) | (0<<CS21) | (0<<CS20);
 ;PCODE: $000000E5 VOL: 0
 ;PCODE: $000000E6 VOL: 0
-; 0000 00E5 OCR1BL=0x00;
+; 0000 00EA TCNT2=0x00;
 ;PCODE: $000000E7 VOL: 0
 ;PCODE: $000000E8 VOL: 0
-; 0000 00E6 
-; 0000 00E7 // Timer/Counter 2 initialization
-; 0000 00E8 // Clock source: System Clock
-; 0000 00E9 // Clock value: Timer2 Stopped
-; 0000 00EA // Mode: Normal top=0xFF
-; 0000 00EB // OC2 output: Disconnected
-; 0000 00EC ASSR=0<<AS2;
+; 0000 00EB OCR2=0x00;
 ;PCODE: $000000E9 VOL: 0
 ;PCODE: $000000EA VOL: 0
-; 0000 00ED TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (0<<CTC2) | (0<<CS22) | (0<<CS21) | (0<<CS20);
+; 0000 00EC 
+; 0000 00ED // Timer(s)/Counter(s) Interrupt(s) initialization
+; 0000 00EE TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (0<<OCIE1A) | (0<<OCIE1B) | (0<<TOIE1) | (0<<TOIE0);
 ;PCODE: $000000EB VOL: 0
 ;PCODE: $000000EC VOL: 0
-; 0000 00EE TCNT2=0x00;
+; 0000 00EF 
+; 0000 00F0 // External Interrupt(s) initialization
+; 0000 00F1 // INT0: Off
+; 0000 00F2 // INT1: Off
+; 0000 00F3 MCUCR=(0<<ISC11) | (0<<ISC10) | (0<<ISC01) | (0<<ISC00);
 ;PCODE: $000000ED VOL: 0
 ;PCODE: $000000EE VOL: 0
-; 0000 00EF OCR2=0x00;
+; 0000 00F4 
+; 0000 00F5 // USART initialization
+; 0000 00F6 // Communication Parameters: 8 Data, 1 Stop, No Parity
+; 0000 00F7 // USART Receiver: On
+; 0000 00F8 // USART Transmitter: On
+; 0000 00F9 // USART Mode: Asynchronous
+; 0000 00FA // USART Baud Rate: 115200
+; 0000 00FB UCSRA=(0<<RXC) | (0<<TXC) | (0<<UDRE) | (0<<FE) | (0<<DOR) | (0<<UPE) | (0<<U2X) | (0<<MPCM);
 ;PCODE: $000000EF VOL: 0
 ;PCODE: $000000F0 VOL: 0
-; 0000 00F0 
-; 0000 00F1 // Timer(s)/Counter(s) Interrupt(s) initialization
-; 0000 00F2 TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (0<<OCIE1A) | (0<<OCIE1B) | (0<<TOIE1) | (0<<TOIE0);
+; 0000 00FC UCSRB=(1<<RXCIE) | (1<<TXCIE) | (0<<UDRIE) | (1<<RXEN) | (1<<TXEN) | (0<<UCSZ2) | (0<<RXB8) | (0<<TXB8);
 ;PCODE: $000000F1 VOL: 0
 ;PCODE: $000000F2 VOL: 0
-; 0000 00F3 
-; 0000 00F4 // External Interrupt(s) initialization
-; 0000 00F5 // INT0: Off
-; 0000 00F6 // INT1: Off
-; 0000 00F7 MCUCR=(0<<ISC11) | (0<<ISC10) | (0<<ISC01) | (0<<ISC00);
+; 0000 00FD UCSRC=(1<<URSEL) | (0<<UMSEL) | (0<<UPM1) | (0<<UPM0) | (0<<USBS) | (1<<UCSZ1) | (1<<UCSZ0) | (0<<UCPOL);
 ;PCODE: $000000F3 VOL: 0
 ;PCODE: $000000F4 VOL: 0
-; 0000 00F8 
-; 0000 00F9 // USART initialization
-; 0000 00FA // Communication Parameters: 8 Data, 1 Stop, No Parity
-; 0000 00FB // USART Receiver: On
-; 0000 00FC // USART Transmitter: On
-; 0000 00FD // USART Mode: Asynchronous
-; 0000 00FE // USART Baud Rate: 115200
-; 0000 00FF UCSRA=(0<<RXC) | (0<<TXC) | (0<<UDRE) | (0<<FE) | (0<<DOR) | (0<<UPE) | (0<<U2X) | (0<<MPCM);
+; 0000 00FE UBRRH=0x00;
 ;PCODE: $000000F5 VOL: 0
 ;PCODE: $000000F6 VOL: 0
-; 0000 0100 UCSRB=(1<<RXCIE) | (1<<TXCIE) | (0<<UDRIE) | (1<<RXEN) | (1<<TXEN) | (0<<UCSZ2) | (0<<RXB8) | (0<<TXB8);
+; 0000 00FF UBRRL=0x03;
 ;PCODE: $000000F7 VOL: 0
 ;PCODE: $000000F8 VOL: 0
-; 0000 0101 UCSRC=(1<<URSEL) | (0<<UMSEL) | (0<<UPM1) | (0<<UPM0) | (0<<USBS) | (1<<UCSZ1) | (1<<UCSZ0) | (0<<UCPOL);
+; 0000 0100 
+; 0000 0101 // Analog Comparator initialization
+; 0000 0102 // Analog Comparator: Off
+; 0000 0103 // The Analog Comparator's positive input is
+; 0000 0104 // connected to the AIN0 pin
+; 0000 0105 // The Analog Comparator's negative input is
+; 0000 0106 // connected to the AIN1 pin
+; 0000 0107 ACSR=(1<<ACD) | (0<<ACBG) | (0<<ACO) | (0<<ACI) | (0<<ACIE) | (0<<ACIC) | (0<<ACIS1) | (0<<ACIS0);
 ;PCODE: $000000F9 VOL: 0
 ;PCODE: $000000FA VOL: 0
-; 0000 0102 UBRRH=0x00;
+; 0000 0108 SFIOR=(0<<ACME);
 ;PCODE: $000000FB VOL: 0
 ;PCODE: $000000FC VOL: 0
-; 0000 0103 UBRRL=0x03;
+; 0000 0109 
+; 0000 010A // ADC initialization
+; 0000 010B // ADC disabled
+; 0000 010C ADCSRA=(0<<ADEN) | (0<<ADSC) | (0<<ADFR) | (0<<ADIF) | (0<<ADIE) | (0<<ADPS2) | (0<<ADPS1) | (0<<ADPS0);
 ;PCODE: $000000FD VOL: 0
 ;PCODE: $000000FE VOL: 0
-; 0000 0104 
-; 0000 0105 // Analog Comparator initialization
-; 0000 0106 // Analog Comparator: Off
-; 0000 0107 // The Analog Comparator's positive input is
-; 0000 0108 // connected to the AIN0 pin
-; 0000 0109 // The Analog Comparator's negative input is
-; 0000 010A // connected to the AIN1 pin
-; 0000 010B ACSR=(1<<ACD) | (0<<ACBG) | (0<<ACO) | (0<<ACI) | (0<<ACIE) | (0<<ACIC) | (0<<ACIS1) | (0<<ACIS0);
+; 0000 010D 
+; 0000 010E // SPI initialization
+; 0000 010F // SPI disabled
+; 0000 0110 SPCR=(0<<SPIE) | (0<<SPE) | (0<<DORD) | (0<<MSTR) | (0<<CPOL) | (0<<CPHA) | (0<<SPR1) | (0<<SPR0);
 ;PCODE: $000000FF VOL: 0
 ;PCODE: $00000100 VOL: 0
-; 0000 010C SFIOR=(0<<ACME);
+; 0000 0111 
+; 0000 0112 // TWI initialization
+; 0000 0113 // TWI disabled
+; 0000 0114 TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
 ;PCODE: $00000101 VOL: 0
 ;PCODE: $00000102 VOL: 0
-; 0000 010D 
-; 0000 010E // ADC initialization
-; 0000 010F // ADC disabled
-; 0000 0110 ADCSRA=(0<<ADEN) | (0<<ADSC) | (0<<ADFR) | (0<<ADIF) | (0<<ADIE) | (0<<ADPS2) | (0<<ADPS1) | (0<<ADPS0);
-;PCODE: $00000103 VOL: 0
-;PCODE: $00000104 VOL: 0
-; 0000 0111 
-; 0000 0112 // SPI initialization
-; 0000 0113 // SPI disabled
-; 0000 0114 SPCR=(0<<SPIE) | (0<<SPE) | (0<<DORD) | (0<<MSTR) | (0<<CPOL) | (0<<CPHA) | (0<<SPR1) | (0<<SPR0);
-;PCODE: $00000105 VOL: 0
-;PCODE: $00000106 VOL: 0
 ; 0000 0115 
-; 0000 0116 // TWI initialization
-; 0000 0117 // TWI disabled
-; 0000 0118 TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
-;PCODE: $00000107 VOL: 0
-;PCODE: $00000108 VOL: 0
-; 0000 0119 
-; 0000 011A // Global enable interrupts
-; 0000 011B #asm("sei")
-;PCODE: $00000109 VOL: 0
+; 0000 0116 // Global enable interrupts
+; 0000 0117 #asm("sei")
+;PCODE: $00000103 VOL: 0
 	sei
+;PCODE: $00000104 VOL: 0
+; 0000 0118 
+; 0000 0119 while (1)
+;PCODE: $00000105 VOL: 0
+; 0000 011A       {
+; 0000 011B        _data = getchar();
+;PCODE: $00000106 VOL: 0
+;PCODE: $00000107 VOL: 0
+; 0000 011C       // Place your code here
+; 0000 011D         //putchar(getchar());
+; 0000 011E         if(_data == 0xFF){
+;PCODE: $00000108 VOL: 0
+;PCODE: $00000109 VOL: 0
 ;PCODE: $0000010A VOL: 0
-; 0000 011C 
-; 0000 011D while (1)
+; 0000 011F            while(_counter < 28){
 ;PCODE: $0000010B VOL: 0
-; 0000 011E       { /*
-; 0000 011F       // Place your code here
-; 0000 0120         _data = getchar();
-; 0000 0121         if(_data == 0xFF){  //  Находим преамбулу.
-; 0000 0122             pocket_data[0] =  _data; // Включаем преамбулу в пакет.
-; 0000 0123             while(_counter < 27){
-; 0000 0124                 pocket_data[_counter] = getchar();  //  Формируем полный пакет.
-; 0000 0125                 putchar(getchar());
-; 0000 0126                 _counter++;
-; 0000 0127             }
-; 0000 0128             _counter = 0;  //   Обнуляем счетчик данных в пакете.
-; 0000 0129         }  */
-; 0000 012A 
-; 0000 012B 
-; 0000 012C         write_float(printf("%f", 125.445));
 ;PCODE: $0000010C VOL: 0
 ;PCODE: $0000010D VOL: 0
 ;PCODE: $0000010E VOL: 0
+; 0000 0120                 pocket_data[_counter] = getchar();
 ;PCODE: $0000010F VOL: 0
 ;PCODE: $00000110 VOL: 0
 ;PCODE: $00000111 VOL: 0
@@ -615,31 +603,93 @@
 ;PCODE: $00000113 VOL: 0
 ;PCODE: $00000114 VOL: 0
 ;PCODE: $00000115 VOL: 0
+; 0000 0121                 //putchar( pocket_data[_counter]);
+; 0000 0122                 _counter++;
 ;PCODE: $00000116 VOL: 0
 ;PCODE: $00000117 VOL: 0
-; 0000 012D          //  Достаем необходимые данных из пакета.
-; 0000 012E 
-; 0000 012F         // 3C25C43D == 0.0101
-; 0000 0130 
-; 0000 0131         //send_UART(12.23);
-; 0000 0132 
-; 0000 0133         //uint8_t *pocket_data = (uint8_t *)&pitch_float;
-; 0000 0134 
-; 0000 0135         //strcat(pitch_hex, (pocket_data[24]));
-; 0000 0136         //pitch_hex=strcat(pocket_data[24]);
-; 0000 0137         //pitch_float = typecast(uint32(hex2dec(pitch_hex)), 'single');
-; 0000 0138 
-; 0000 0139 
-; 0000 013A 
-; 0000 013B 
-; 0000 013C              //putchar(getchar());
-; 0000 013D 
-; 0000 013E              //delay_ms(200);
-; 0000 013F       }
+; 0000 0123            }
 ;PCODE: $00000118 VOL: 0
 ;PCODE: $00000119 VOL: 0
-; 0000 0140 }
+; 0000 0124            _counter = 0;
 ;PCODE: $0000011A VOL: 0
 ;PCODE: $0000011B VOL: 0
+; 0000 0125         }
+; 0000 0126 
+; 0000 0127         /*for(_counter = 0; _counter < 28; _counter++){
+; 0000 0128              putchar( pocket_data[_counter]);
+; 0000 0129         }*/
+; 0000 012A 
+; 0000 012B         strcpy(pitch_hex, &pocket_data[24]);
 ;PCODE: $0000011C VOL: 0
 ;PCODE: $0000011D VOL: 0
+;PCODE: $0000011E VOL: 0
+;PCODE: $0000011F VOL: 0
+;PCODE: $00000120 VOL: 0
+; 0000 012C         strcpy(pitch_hex, &pocket_data[23]);
+;PCODE: $00000121 VOL: 0
+;PCODE: $00000122 VOL: 0
+;PCODE: $00000123 VOL: 0
+;PCODE: $00000124 VOL: 0
+; 0000 012D         strcpy(pitch_hex, &pocket_data[22]);
+;PCODE: $00000125 VOL: 0
+;PCODE: $00000126 VOL: 0
+;PCODE: $00000127 VOL: 0
+;PCODE: $00000128 VOL: 0
+; 0000 012E         strcpy(pitch_hex, &pocket_data[21]);
+;PCODE: $00000129 VOL: 0
+;PCODE: $0000012A VOL: 0
+;PCODE: $0000012B VOL: 0
+;PCODE: $0000012C VOL: 0
+; 0000 012F 
+; 0000 0130         printf("%s",pitch_hex);
+;PCODE: $0000012D VOL: 0
+;PCODE: $0000012E VOL: 0
+;PCODE: $0000012F VOL: 0
+;PCODE: $00000130 VOL: 0
+;PCODE: $00000131 VOL: 0
+;PCODE: $00000132 VOL: 0
+;PCODE: $00000133 VOL: 0
+;PCODE: $00000134 VOL: 0
+;PCODE: $00000135 VOL: 0
+;PCODE: $00000136 VOL: 0
+; 0000 0131 
+; 0000 0132         /*
+; 0000 0133         _data = getchar();
+; 0000 0134         if(_data == 0xFF && _readingComplete == 1){  //  Находим преамбулу.
+; 0000 0135             _readingComplete = 0;
+; 0000 0136             pocket_data[0] =  _data; // Включаем преамбулу в пакет.
+; 0000 0137             while(_counter < 27){
+; 0000 0138                 pocket_data[_counter] = getchar();  //  Формируем полный пакет.
+; 0000 0139                 putchar(getchar());
+; 0000 013A                 _counter++;
+; 0000 013B                 _readingComplete = 1;
+; 0000 013C             }
+; 0000 013D             _counter = 1;  //   Обнуляем счетчик данных в пакете.
+; 0000 013E             putchar(0);
+; 0000 013F         }  */
+; 0000 0140          //  Достаем необходимые данных из пакета.
+; 0000 0141 
+; 0000 0142         // 3C25C43D == 0.0101
+; 0000 0143 
+; 0000 0144         //send_UART(12.23);
+; 0000 0145 
+; 0000 0146         //uint8_t *pocket_data = (uint8_t *)&pitch_float;
+; 0000 0147 
+; 0000 0148         //strcat(pitch_hex, (pocket_data[24]));
+; 0000 0149         //pitch_hex=strcat(pocket_data[24]);
+; 0000 014A         //pitch_float = typecast(uint32(hex2dec(pitch_hex)), 'single');
+; 0000 014B 
+; 0000 014C 
+; 0000 014D 
+; 0000 014E 
+; 0000 014F              //putchar(getchar());
+; 0000 0150 
+; 0000 0151              //delay_ms(200);
+; 0000 0152       }
+;PCODE: $00000137 VOL: 0
+;PCODE: $00000138 VOL: 0
+; 0000 0153 }
+;PCODE: $00000139 VOL: 0
+;PCODE: $0000013A VOL: 0
+;PCODE: $0000013B VOL: 0
+;PCODE: $0000013C VOL: 0

@@ -1,4 +1,4 @@
-function [ rd ] = reading()
+function [ rd ] = reading() %#codegen
 % COM port settings.
 s = serial('COM4');
 set(s,'BaudRate',115200);

@@ -173,11 +173,7 @@ int pocket_len = 28;
 char pocket_data[pocket_len];
 char pitch_hex[4];
 float pitch_float;
-
-//int i = 0x42ED4000;
-//float f;
-//memcpy(&i,&f,sizeof f);
-float f = 122.221;
+char _readingComplete = 1;
 
         
 // Input/Output Ports initialization
@@ -283,21 +279,44 @@ TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
 #asm("sei")
 
 while (1)
-      { /*
+      {  
+       _data = getchar();
       // Place your code here 
+        //putchar(getchar());
+        if(_data == 0xFF){
+           while(_counter < 28){
+                pocket_data[_counter] = getchar(); 
+                //putchar( pocket_data[_counter]);
+                _counter++; 
+           }
+           _counter = 0;
+        }
+        
+        /*for(_counter = 0; _counter < 28; _counter++){
+             putchar( pocket_data[_counter]);
+        }*/ 
+        
+        strcpy(pitch_hex, &pocket_data[24]);
+        strcpy(pitch_hex, &pocket_data[23]);
+        strcpy(pitch_hex, &pocket_data[22]);
+        strcpy(pitch_hex, &pocket_data[21]);
+        
+        printf("%s",pitch_hex);
+        
+        /*
         _data = getchar();
-        if(_data == 0xFF){  //  Находим преамбулу.  
+        if(_data == 0xFF && _readingComplete == 1){  //  Находим преамбулу. 
+            _readingComplete = 0; 
             pocket_data[0] =  _data; // Включаем преамбулу в пакет.
             while(_counter < 27){ 
                 pocket_data[_counter] = getchar();  //  Формируем полный пакет.
                 putchar(getchar()); 
-                _counter++;
+                _counter++; 
+                _readingComplete = 1;
             }
-            _counter = 0;  //   Обнуляем счетчик данных в пакете.
-        }  */
-        
-         
-        write_float(printf("%f", 125.445));
+            _counter = 1;  //   Обнуляем счетчик данных в пакете.
+            putchar(0);
+        }  */ 
          //  Достаем необходимые данных из пакета.
 
         // 3C25C43D == 0.0101

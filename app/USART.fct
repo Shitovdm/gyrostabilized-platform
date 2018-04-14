@@ -1,5 +1,5 @@
-main DSTACK_USAGE:12 DSTACK_LEVEL:12 FILE:"USART.c" LINE:167
-printf DSTACK_USAGE:10 DSTACK_LEVEL:22 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\stdio.lib" LINE:1528
-_print DSTACK_USAGE:20 DSTACK_LEVEL:42 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\stdio.lib" LINE:533
-strlen DSTACK_USAGE:2 DSTACK_LEVEL:44 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\string.lib" LINE:1706
-usart_rx_isr DSTACK_USAGE:5 DSTACK_LEVEL:49 FILE:"USART.c" LINE:56
+main DSTACK_USAGE:8 DSTACK_LEVEL:8 FILE:"USART.c" LINE:167
+printf DSTACK_USAGE:10 DSTACK_LEVEL:18 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\stdio.lib" LINE:1528
+_print DSTACK_USAGE:20 DSTACK_LEVEL:38 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\stdio.lib" LINE:533
+strlen DSTACK_USAGE:2 DSTACK_LEVEL:40 FILE:"D:\Program Files\Electronics\CodeVisionAVR\lib\string.lib" LINE:1706
+usart_rx_isr DSTACK_USAGE:5 DSTACK_LEVEL:45 FILE:"USART.c" LINE:56
