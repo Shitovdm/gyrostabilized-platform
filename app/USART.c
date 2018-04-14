@@ -163,6 +163,17 @@ void send_UART(char value) {
     UDR = value; // Помещаем данные в буфер, начинаем передачу
 }
 
+void print_float(float f){
+    char mystr[16];
+    double floatNum;
+    int i;    
+    sprintf(mystr, "%s", floatNum);
+    for(i = 0; i < 16; i++){
+        while(!(UCSRA&(1<<UDRE))){};
+       UDR = mystr[i];
+    }
+    
+}
 
 void main(void)
 {
@@ -174,6 +185,8 @@ char pocket_data[pocket_len];
 char pitch_hex[4];
 float pitch_float;
 char _readingComplete = 1;
+float *x;
+
 
         
 // Input/Output Ports initialization
@@ -285,23 +298,44 @@ while (1)
         //putchar(getchar());
         if(_data == 0xFF){
            while(_counter < 28){
-                pocket_data[_counter] = getchar(); 
-                //putchar( pocket_data[_counter]);
+                pocket_data[_counter] = getchar();     //   Формируем пакет данных.
+                //putchar( pocket_data[_counter]);    //  Пересылаем данные raspberry pi.
                 _counter++; 
+                
+                if(pocket_data[_counter] == 0){
+                    //write_float(pocket_data[_counter]);
+                    //UDR = pocket_data[_counter];
+                }if(_counter == 3){
+                     UDR = pocket_data[_counter];
+                }
+                 
            }
            _counter = 0;
+           pitch_hex[0] = pocket_data[1];  
+           pitch_hex[1] = pocket_data[2]; 
+           pitch_hex[2] = pocket_data[3]; 
+           pitch_hex[3] = pocket_data[4]; 
+
+            //x=(float *)pitch_hex; 
+            //UDR = pocket_data[1] + pocket_data[2];
+           //UDR = write_float(*x); 
+           //send_UART(x);
+           
+          
+           
         }
         
         /*for(_counter = 0; _counter < 28; _counter++){
              putchar( pocket_data[_counter]);
         }*/ 
         
-        strcpy(pitch_hex, &pocket_data[24]);
-        strcpy(pitch_hex, &pocket_data[23]);
-        strcpy(pitch_hex, &pocket_data[22]);
-        strcpy(pitch_hex, &pocket_data[21]);
-        
-        printf("%s",pitch_hex);
+        /*
+        strcpy(pitch_hex, &pocket_data[0]);
+        strcpy(pitch_hex, &pocket_data[1]);
+        strcpy(pitch_hex, &pocket_data[2]);
+        strcpy(pitch_hex, &pocket_data[3]);
+        */
+        //printf(pocket_data[0]);
         
         /*
         _data = getchar();

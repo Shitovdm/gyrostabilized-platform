@@ -133,7 +133,7 @@ UseEEPROMLocation0=1
 RebuildAll=0
 LinkageInformationPresent=0
 COFFileTimeStamp=-1
-Build=95
+Build=135
 [DefinedSymbolsDebug]
 Count=0
 [Compiler]
@@ -235,7 +235,7 @@ UseEEPROMLocation0=1
 RebuildAll=1
 LinkageInformationPresent=0
 COFFileTimeStamp=-1
-Build=95
+Build=135
 [DefinedSymbols]
 Count=0
 [StartUp]
@@ -332,7 +332,7 @@ L13=Enhanced function parameters passing: Yes
 L14=Automatic register allocation: Yes
 L15=Smart register allocation: Yes
 L16=
-L17=Build: 95
+L17=Build: 135
 L18=0 line(s) compiled
 L19=No errors
 L20=No warnings
@@ -341,7 +341,7 @@ L22=Bit variables size: 0 byte(s)
 L23=
 L24=Data Stack area: 0x60 to 0x15F
 L25=Data Stack size: 256 byte(s)
-L26=Estimated Data Stack usage: 45 byte(s)
+L26=Estimated Data Stack usage: 16 byte(s)
 L27=
 L28=RAM Global variables area: 0x160 to 0x197
 L29=RAM Global variables size: 56 byte(s)
@@ -353,26 +353,23 @@ L34=Heap size: 0 byte(s)
 L35=
 L36=
 L37=EEPROM usage: 0 byte(s), 0,0% of EEPROM
-L38=Program size: 727 words (1454 bytes), 17,7% of FLASH
-L39=53 words (106 bytes), 6,8% reduced by Code Compression
+L38=Program size: 255 words (510 bytes), 6,2% of FLASH
+L39=2 words (4 bytes), 0,8% reduced by Code Compression
 Lines=35
 [BuildInfoAssembler]
 L1=AVRASM: AVR macro assembler 2.1.30 (build 592 Nov  7 2008 12:38:17)
 L2=Copyright (C) 1995-2008 ATMEL Corporation
 L3=
-L4=D:\Electronic\gyrostabilized-platform\app\Debug\List\USART.asm(2445): No EEPROM data, deleting D:\Electronic\gyrostabilized-platform\app\Debug\Exe\USART.eep
+L4=D:\Electronic\gyrostabilized-platform\app\Debug\List\USART.asm(1864): No EEPROM data, deleting D:\Electronic\gyrostabilized-platform\app\Debug\Exe\USART.eep
 L5=
 L6=ATmega8 memory use summary [bytes]:
 L7=Segment   Begin    End      Code   Data   Used    Size   Use%
 L8=---------------------------------------------------------------
-L9=[.cseg] 0x000000 0x0005ae   1410     44   1454    8192  17.7%
+L9=[.cseg] 0x000000 0x0001fe    466     44    510    8192   6.2%
 L10=[.dseg] 0x000060 0x000198      0     56     56    1024   5.5%
 L11=[.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 L12=
 Lines=0
-[HeadersList]
-Files=1
-F1=D:\Electronic\gyrostabilized-platform\app\USART.c
 [Bookmarks0]
 Row=0
 Column=0
@@ -419,6 +416,9 @@ BK8=-1
 BK9=-1
 [FoldedCode2]
 Blocks=0
+[HeadersList]
+Files=1
+F1=D:\Electronic\gyrostabilized-platform\app\USART.c
 [Header1]
 Files=9
 F1=D:\Program Files\Electronics\CodeVisionAVR\inc\mega8.h

@@ -1,4 +1,4 @@
-VERSION:3 SOURCE_TIMESTAMP:4C8DA0BA
+VERSION:3 SOURCE_TIMESTAMP:4C8E6EF4
 NODE:I LEVEL:0 LINE:24 "D:\Program Files\Electronics\CodeVisionAVR\inc\mega8.h"
 NODE:I LEVEL:0 LINE:25 "D:\Program Files\Electronics\CodeVisionAVR\inc\delay.h"
 NODE:I LEVEL:0 LINE:26 "D:\Program Files\Electronics\CodeVisionAVR\inc\string.h"
@@ -28,4 +28,5 @@ NODE:F LEVEL:0 LINE:128 "putchar(unsigned char c)"
 NODE:I LEVEL:0 LINE:147 "D:\Program Files\Electronics\CodeVisionAVR\inc\stdio.h"
 NODE:F LEVEL:0 LINE:150 "write_float(float f)"
 NODE:F LEVEL:0 LINE:161 "send_UART(unsigned char value)"
-NODE:F LEVEL:0 LINE:167 "main(void)"
+NODE:F LEVEL:0 LINE:166 "print_float(float f)"
+NODE:F LEVEL:0 LINE:178 "main(void)"
