@@ -46,7 +46,7 @@ plot(counter,pitch,counter,roll,counter,yaw);
           roll_hex=strcat(b(16),b(15),b(14),b(13));
           f2 = typecast(uint32(hex2dec(roll_hex)), 'single');
           
-          yaw_hex=strcat(b(20),b(19),b(18),b(17));
+          yaw_hex=strcat(b(24),b(23),b(22),b(21));
           
           %typecast(uint32(hex2dec("3d383b98")), 'single')
           f3 = typecast(uint32(hex2dec(yaw_hex)), 'single');

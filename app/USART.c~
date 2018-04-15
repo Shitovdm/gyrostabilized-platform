@@ -25,6 +25,8 @@ Data Stack size         : 256
 #include <delay.h>
 #include <string.h>
 #include <inttypes.h>
+#include <math.h>
+
 // Declare your global variables here
 
 #define DATA_REGISTER_EMPTY (1<<UDRE)
@@ -175,6 +177,7 @@ void print_float(float f){
     
 }
 
+
 void main(void)
 {
 // Declare your local variables here
@@ -182,10 +185,20 @@ int _counter = 1;
 char _data;
 int pocket_len = 28;
 char pocket_data[pocket_len];
-char pitch_hex[4];
+unsigned char pitch_hex[4];
 float pitch_float;
-char _readingComplete = 1;
-float *x;
+
+
+float *point_a;
+float a;
+
+//  Рабочий способ преобразования 4 байт во float.
+/*float *point_a;
+float a;
+unsigned char buf_float[4] = {0,0,0x60,0x40};
+point_a = &a;
+memcpy(point_a,buf_float,4);
+write_float(a);*/
 
 
         
@@ -296,7 +309,7 @@ while (1)
        _data = getchar();
       // Place your code here 
         //putchar(getchar());
-        if(_data == 0xFF){
+        if(_data == 255){
            while(_counter < 28){
                 pocket_data[_counter] = getchar();     //   Формируем пакет данных.
                 //putchar( pocket_data[_counter]);    //  Пересылаем данные raspberry pi.
@@ -304,22 +317,47 @@ while (1)
                 
                 if(pocket_data[_counter] == 0){
                     //write_float(pocket_data[_counter]);
-                    //UDR = pocket_data[_counter];
-                }if(_counter == 2){
-                     UDR = pocket_data[_counter];
+                
+                }
+                if(_counter == 5){
+                     //UDR = pocket_data[0];
                 }
                  
            }
            _counter = 0;
-           pitch_hex[0] = pocket_data[1];  
-           pitch_hex[1] = pocket_data[2]; 
-           pitch_hex[2] = pocket_data[3]; 
-           pitch_hex[3] = pocket_data[4]; 
+           pitch_hex[0] = pocket_data[21];  
+           pitch_hex[1] = pocket_data[22]; 
+           pitch_hex[2] = pocket_data[23]; 
+           pitch_hex[3] = pocket_data[24]; 
+                
+           
+            
+            point_a = &a;
+            memcpy(point_a,pitch_hex,4);
+            write_float(floor(a));
+            
+            a = 0; 
+           
+             /*
+             04 C4 39 7F 
+             D8 3B D5 99 
+             03 3B E3 78
+             63 3B 85 08
+            1F 3C E2 C0 F0 BB 79 88 C7 3C 0B 84 88 3C FE 79
+            16 BD 86 F4 58 BB 10 66 A5 BB 79 F7 A3 BB 49 6A
+            6B 3C B0 12 
 
+             */
+           
+           
+            
             //x=(float *)pitch_hex; 
             //UDR = pocket_data[1] + pocket_data[2];
-           //UDR = write_float(*x); 
-           //send_UART(x);
+            //  Функция выводит float число в терминал в 16-тиричном формате в инверсном виде.
+            //  Перевести можно в калькуляторе:  https://gregstoll.dyndns.org/~gregstoll/floattohex/
+            //write_float(25.365); 
+            
+            //send_UART(x);
            
           
            

@@ -1117,10 +1117,10 @@ __START_OF_CODE:
 	RJMP 0x00
 	RJMP 0x00
 
-_tbl10_G101:
+_tbl10_G102:
 	.DB  0x10,0x27,0xE8,0x3,0x64,0x0,0xA,0x0
 	.DB  0x1,0x0
-_tbl16_G101:
+_tbl16_G102:
 	.DB  0x0,0x10,0x0,0x1,0x10,0x0,0x1,0x0
 
 ;REGISTER BIT VARIABLES INITIALIZATION
@@ -1134,6 +1134,11 @@ __REG_VARS:
 
 _0x0:
 	.DB  0x25,0x73,0x0
+_0x2060060:
+	.DB  0x1
+_0x2060000:
+	.DB  0x2D,0x4E,0x41,0x4E,0x0,0x49,0x4E,0x46
+	.DB  0x0
 
 __GLOBAL_INI_TBL:
 	.DW  0x01
@@ -1143,6 +1148,10 @@ __GLOBAL_INI_TBL:
 	.DW  0x06
 	.DW  0x04
 	.DW  __REG_VARS*2
+
+	.DW  0x01
+	.DW  __seed_G103
+	.DW  _0x2060060*2
 
 _0xFFFFFFFF:
 	.DW  0
@@ -1259,6 +1268,8 @@ __GLOBAL_INI_END:
 ;#include <delay.h>
 ;#include <string.h>
 ;#include <inttypes.h>
+;#include <math.h>
+;
 ;// Declare your global variables here
 ;
 ;#define DATA_REGISTER_EMPTY (1<<UDRE)
@@ -1288,58 +1299,58 @@ __GLOBAL_INI_END:
 ;
 ;// USART Receiver interrupt service routine
 ;interrupt [USART_RXC] void usart_rx_isr(void){
-; 0000 0038 interrupt [12] void usart_rx_isr(void){
+; 0000 003A interrupt [12] void usart_rx_isr(void){
 
 	.CSEG
 _usart_rx_isr:
 ; .FSTART _usart_rx_isr
 	RCALL SUBOPT_0x0
-; 0000 0039     char status,data;
-; 0000 003A     status=UCSRA;
+; 0000 003B     char status,data;
+; 0000 003C     status=UCSRA;
 	RCALL __SAVELOCR2
 ;	status -> R17
 ;	data -> R16
 	IN   R17,11
-; 0000 003B     data=UDR;
+; 0000 003D     data=UDR;
 	IN   R16,12
-; 0000 003C     if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0)
+; 0000 003E     if ((status & (FRAMING_ERROR | PARITY_ERROR | DATA_OVERRUN))==0)
 	MOV  R30,R17
 	ANDI R30,LOW(0x1C)
 	BRNE _0x3
-; 0000 003D        {
-; 0000 003E        rx_buffer[rx_wr_index++]=data;
+; 0000 003F        {
+; 0000 0040        rx_buffer[rx_wr_index++]=data;
 	MOV  R30,R5
 	INC  R5
 	LDI  R31,0
 	SUBI R30,LOW(-_rx_buffer)
 	SBCI R31,HIGH(-_rx_buffer)
 	ST   Z,R16
-; 0000 003F     #if RX_BUFFER_SIZE == 256
-; 0000 0040        // special case for receiver buffer size=256
-; 0000 0041        if (++rx_counter == 0) rx_buffer_overflow=1;
-; 0000 0042     #else
-; 0000 0043        if (rx_wr_index == RX_BUFFER_SIZE) rx_wr_index=0;
+; 0000 0041     #if RX_BUFFER_SIZE == 256
+; 0000 0042        // special case for receiver buffer size=256
+; 0000 0043        if (++rx_counter == 0) rx_buffer_overflow=1;
+; 0000 0044     #else
+; 0000 0045        if (rx_wr_index == RX_BUFFER_SIZE) rx_wr_index=0;
 	LDI  R30,LOW(28)
 	CP   R30,R5
 	BRNE _0x4
 	CLR  R5
-; 0000 0044        if (++rx_counter == RX_BUFFER_SIZE)
+; 0000 0046        if (++rx_counter == RX_BUFFER_SIZE)
 _0x4:
 	INC  R7
 	LDI  R30,LOW(28)
 	CP   R30,R7
 	BRNE _0x5
-; 0000 0045           {
-; 0000 0046           rx_counter=0;
+; 0000 0047           {
+; 0000 0048           rx_counter=0;
 	CLR  R7
-; 0000 0047           rx_buffer_overflow=1;
+; 0000 0049           rx_buffer_overflow=1;
 	SET
 	BLD  R2,0
-; 0000 0048           }
-; 0000 0049     #endif
-; 0000 004A        }
+; 0000 004A           }
+; 0000 004B     #endif
+; 0000 004C        }
 _0x5:
-; 0000 004B }
+; 0000 004D }
 _0x3:
 	LD   R16,Y+
 	LD   R17,Y+
@@ -1351,42 +1362,42 @@ _0x3:
 ;#define _ALTERNATE_GETCHAR_
 ;#pragma used+
 ;char getchar(void){
-; 0000 0051 char getchar(void){
+; 0000 0053 char getchar(void){
 _getchar:
 ; .FSTART _getchar
-; 0000 0052     char data;
-; 0000 0053     while (rx_counter==0);
+; 0000 0054     char data;
+; 0000 0055     while (rx_counter==0);
 	ST   -Y,R17
 ;	data -> R17
 _0x6:
 	TST  R7
 	BREQ _0x6
-; 0000 0054     data=rx_buffer[rx_rd_index++];
+; 0000 0056     data=rx_buffer[rx_rd_index++];
 	MOV  R30,R4
 	INC  R4
 	LDI  R31,0
 	SUBI R30,LOW(-_rx_buffer)
 	SBCI R31,HIGH(-_rx_buffer)
 	LD   R17,Z
-; 0000 0055     #if RX_BUFFER_SIZE != 256
-; 0000 0056     if (rx_rd_index == RX_BUFFER_SIZE) rx_rd_index=0;
+; 0000 0057     #if RX_BUFFER_SIZE != 256
+; 0000 0058     if (rx_rd_index == RX_BUFFER_SIZE) rx_rd_index=0;
 	LDI  R30,LOW(28)
 	CP   R30,R4
 	BRNE _0x9
 	CLR  R4
-; 0000 0057     #endif
-; 0000 0058     #asm("cli")
+; 0000 0059     #endif
+; 0000 005A     #asm("cli")
 _0x9:
 	cli
-; 0000 0059     --rx_counter;
+; 0000 005B     --rx_counter;
 	DEC  R7
-; 0000 005A     #asm("sei")
+; 0000 005C     #asm("sei")
 	sei
-; 0000 005B     return data;
+; 0000 005D     return data;
 	MOV  R30,R17
 	LD   R17,Y+
 	RET
-; 0000 005C }
+; 0000 005E }
 ; .FEND
 ;#pragma used-
 ;#endif
@@ -1409,17 +1420,17 @@ _0x9:
 ;
 ;// USART Transmitter interrupt service routine
 ;interrupt [USART_TXC] void usart_tx_isr(void){
-; 0000 0071 interrupt [14] void usart_tx_isr(void){
+; 0000 0073 interrupt [14] void usart_tx_isr(void){
 _usart_tx_isr:
 ; .FSTART _usart_tx_isr
 	RCALL SUBOPT_0x0
-; 0000 0072     if (tx_counter)
+; 0000 0074     if (tx_counter)
 	TST  R8
 	BREQ _0xA
-; 0000 0073        {
-; 0000 0074        --tx_counter;
+; 0000 0075        {
+; 0000 0076        --tx_counter;
 	DEC  R8
-; 0000 0075        UDR=tx_buffer[tx_rd_index++];
+; 0000 0077        UDR=tx_buffer[tx_rd_index++];
 	MOV  R30,R9
 	INC  R9
 	LDI  R31,0
@@ -1427,16 +1438,16 @@ _usart_tx_isr:
 	SBCI R31,HIGH(-_tx_buffer)
 	LD   R30,Z
 	OUT  0xC,R30
-; 0000 0076     #if TX_BUFFER_SIZE != 256
-; 0000 0077        if (tx_rd_index == TX_BUFFER_SIZE) tx_rd_index=0;
+; 0000 0078     #if TX_BUFFER_SIZE != 256
+; 0000 0079        if (tx_rd_index == TX_BUFFER_SIZE) tx_rd_index=0;
 	LDI  R30,LOW(28)
 	CP   R30,R9
 	BRNE _0xB
 	CLR  R9
-; 0000 0078     #endif
-; 0000 0079        }
+; 0000 007A     #endif
+; 0000 007B        }
 _0xB:
-; 0000 007A }
+; 0000 007C }
 _0xA:
 _0x2D:
 	LD   R30,Y+
@@ -1451,22 +1462,22 @@ _0x2D:
 ;#define _ALTERNATE_PUTCHAR_
 ;#pragma used+
 ;void putchar(char c){
-; 0000 0080 void putchar(char c){
-; 0000 0081     while (tx_counter == TX_BUFFER_SIZE);
+; 0000 0082 void putchar(char c){
+; 0000 0083     while (tx_counter == TX_BUFFER_SIZE);
 ;	c -> Y+0
-; 0000 0082     #asm("cli")
-; 0000 0083     if (tx_counter || ((UCSRA & DATA_REGISTER_EMPTY)==0))
-; 0000 0084        {
-; 0000 0085        tx_buffer[tx_wr_index++]=c;
-; 0000 0086     #if TX_BUFFER_SIZE != 256
-; 0000 0087        if (tx_wr_index == TX_BUFFER_SIZE) tx_wr_index=0;
-; 0000 0088     #endif
-; 0000 0089        ++tx_counter;
-; 0000 008A        }
-; 0000 008B     else
-; 0000 008C        UDR=c;
-; 0000 008D     #asm("sei")
-; 0000 008E }
+; 0000 0084     #asm("cli")
+; 0000 0085     if (tx_counter || ((UCSRA & DATA_REGISTER_EMPTY)==0))
+; 0000 0086        {
+; 0000 0087        tx_buffer[tx_wr_index++]=c;
+; 0000 0088     #if TX_BUFFER_SIZE != 256
+; 0000 0089        if (tx_wr_index == TX_BUFFER_SIZE) tx_wr_index=0;
+; 0000 008A     #endif
+; 0000 008B        ++tx_counter;
+; 0000 008C        }
+; 0000 008D     else
+; 0000 008E        UDR=c;
+; 0000 008F     #asm("sei")
+; 0000 0090 }
 ;#pragma used-
 ;#endif
 ;
@@ -1475,235 +1486,272 @@ _0x2D:
 ;
 ;
 ;void write_float(float f){
-; 0000 0096 void write_float(float f){
-; 0000 0097     unsigned char *ptr;
-; 0000 0098     char j;
-; 0000 0099     ptr = (unsigned char *)&f;
+; 0000 0098 void write_float(float f){
+_write_float:
+; .FSTART _write_float
+; 0000 0099     unsigned char *ptr;
+; 0000 009A     char j;
+; 0000 009B     ptr = (unsigned char *)&f;
+	RCALL __PUTPARD2
+	RCALL __SAVELOCR4
 ;	f -> Y+4
 ;	*ptr -> R16,R17
 ;	j -> R19
-; 0000 009A     for (j=0;j<4;j++){
-; 0000 009B         while(!(UCSRA&(1<<UDRE))){};
-; 0000 009C         UDR = *(ptr+j);
-; 0000 009D     }
-; 0000 009E }
+	MOVW R30,R28
+	ADIW R30,4
+	MOVW R16,R30
+; 0000 009C     for (j=0;j<4;j++){
+	LDI  R19,LOW(0)
+_0x15:
+	CPI  R19,4
+	BRSH _0x16
+; 0000 009D         while(!(UCSRA&(1<<UDRE))){};
+_0x17:
+	SBIS 0xB,5
+	RJMP _0x17
+; 0000 009E         UDR = *(ptr+j);
+	MOV  R30,R19
+	LDI  R31,0
+	ADD  R30,R16
+	ADC  R31,R17
+	LD   R30,Z
+	OUT  0xC,R30
+; 0000 009F     }
+	SUBI R19,-1
+	RJMP _0x15
+_0x16:
+; 0000 00A0 }
+	RCALL __LOADLOCR4
+	ADIW R28,8
+	RET
+; .FEND
 ;
 ;
 ;void send_UART(char value) {
-; 0000 00A1 void send_UART(char value) {
-; 0000 00A2     while(!( UCSRA & (1 << UDRE)));   // Ожидаем когда очистится буфер передачи
+; 0000 00A3 void send_UART(char value) {
+; 0000 00A4     while(!( UCSRA & (1 << UDRE)));   // Ожидаем когда очистится буфер передачи
 ;	value -> Y+0
-; 0000 00A3     UDR = value; // Помещаем данные в буфер, начинаем передачу
-; 0000 00A4 }
+; 0000 00A5     UDR = value; // Помещаем данные в буфер, начинаем передачу
+; 0000 00A6 }
 ;
 ;void print_float(float f){
-; 0000 00A6 void print_float(float f){
-; 0000 00A7     char mystr[16];
-; 0000 00A8     double floatNum;
-; 0000 00A9     int i;
-; 0000 00AA     sprintf(mystr, "%s", floatNum);
+; 0000 00A8 void print_float(float f){
+; 0000 00A9     char mystr[16];
+; 0000 00AA     double floatNum;
+; 0000 00AB     int i;
+; 0000 00AC     sprintf(mystr, "%s", floatNum);
 ;	f -> Y+22
 ;	mystr -> Y+6
 ;	floatNum -> Y+2
 ;	i -> R16,R17
-; 0000 00AB     for(i = 0; i < 16; i++){
-; 0000 00AC         while(!(UCSRA&(1<<UDRE))){};
-; 0000 00AD        UDR = mystr[i];
-; 0000 00AE     }
-; 0000 00AF 
-; 0000 00B0 }
+; 0000 00AD     for(i = 0; i < 16; i++){
+; 0000 00AE         while(!(UCSRA&(1<<UDRE))){};
+; 0000 00AF        UDR = mystr[i];
+; 0000 00B0     }
+; 0000 00B1 
+; 0000 00B2 }
+;
 ;
 ;void main(void)
-; 0000 00B3 {
+; 0000 00B6 {
 _main:
 ; .FSTART _main
-; 0000 00B4 // Declare your local variables here
-; 0000 00B5 int _counter = 1;
-; 0000 00B6 char _data;
-; 0000 00B7 int pocket_len = 28;
-; 0000 00B8 char pocket_data[pocket_len];
-; 0000 00B9 char pitch_hex[4];
-; 0000 00BA float pitch_float;
-; 0000 00BB char _readingComplete = 1;
-; 0000 00BC float *x;
-; 0000 00BD 
+; 0000 00B7 // Declare your local variables here
+; 0000 00B8 int _counter = 0;
+; 0000 00B9 char _data;
+; 0000 00BA int pocket_len = 28;
+; 0000 00BB char pocket_data[pocket_len];
+; 0000 00BC unsigned char pitch_hex[4];
+; 0000 00BD float pitch_float;
 ; 0000 00BE 
 ; 0000 00BF 
-; 0000 00C0 // Input/Output Ports initialization
-; 0000 00C1 // Port B initialization
-; 0000 00C2 // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
-; 0000 00C3 DDRB=(0<<DDB7) | (0<<DDB6) | (0<<DDB5) | (0<<DDB4) | (0<<DDB3) | (0<<DDB2) | (0<<DDB1) | (0<<DDB0);
-	SBIW R28,10
+; 0000 00C0 float *point_a;
+; 0000 00C1 float a;
+; 0000 00C2 
+; 0000 00C3 //  Рабочий способ преобразования 4 байт во float.
+; 0000 00C4 /*float *point_a;
+; 0000 00C5 float a;
+; 0000 00C6 unsigned char buf_float[4] = {0,0,0x60,0x40};
+; 0000 00C7 point_a = &a;
+; 0000 00C8 memcpy(point_a,buf_float,4);
+; 0000 00C9 write_float(a);*/
+; 0000 00CA 
+; 0000 00CB 
+; 0000 00CC 
+; 0000 00CD // Input/Output Ports initialization
+; 0000 00CE // Port B initialization
+; 0000 00CF // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
+; 0000 00D0 DDRB=(0<<DDB7) | (0<<DDB6) | (0<<DDB5) | (0<<DDB4) | (0<<DDB3) | (0<<DDB2) | (0<<DDB1) | (0<<DDB0);
+	SBIW R28,14
 ;	_counter -> R16,R17
 ;	_data -> R19
 ;	pocket_len -> R20,R21
-;	pocket_data -> Y+10
-;	pitch_hex -> Y+6
-;	pitch_float -> Y+2
-;	_readingComplete -> R18
-;	*x -> Y+0
-	__GETWRN 16,17,1
+;	pocket_data -> Y+14
+;	pitch_hex -> Y+10
+;	pitch_float -> Y+6
+;	*point_a -> Y+4
+;	a -> Y+0
+	__GETWRN 16,17,0
 	__GETWRN 20,21,28
-	LDI  R18,1
 	LDI  R30,LOW(0)
 	OUT  0x17,R30
-; 0000 00C4 // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
-; 0000 00C5 PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (0<<PORTB3) | (0<<PORTB2) | (0<<PORTB1) | (0<<PORTB0);
+; 0000 00D1 // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
+; 0000 00D2 PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (0<<PORTB3) | (0<<PORTB2) | (0<<PORTB1) | (0<<PORTB0);
 	OUT  0x18,R30
-; 0000 00C6 
-; 0000 00C7 // Port C initialization
-; 0000 00C8 // Function: Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
-; 0000 00C9 DDRC=(0<<DDC6) | (0<<DDC5) | (0<<DDC4) | (0<<DDC3) | (0<<DDC2) | (0<<DDC1) | (0<<DDC0);
+; 0000 00D3 
+; 0000 00D4 // Port C initialization
+; 0000 00D5 // Function: Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
+; 0000 00D6 DDRC=(0<<DDC6) | (0<<DDC5) | (0<<DDC4) | (0<<DDC3) | (0<<DDC2) | (0<<DDC1) | (0<<DDC0);
 	OUT  0x14,R30
-; 0000 00CA // State: Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
-; 0000 00CB PORTC=(0<<PORTC6) | (0<<PORTC5) | (0<<PORTC4) | (0<<PORTC3) | (0<<PORTC2) | (0<<PORTC1) | (0<<PORTC0);
+; 0000 00D7 // State: Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
+; 0000 00D8 PORTC=(0<<PORTC6) | (0<<PORTC5) | (0<<PORTC4) | (0<<PORTC3) | (0<<PORTC2) | (0<<PORTC1) | (0<<PORTC0);
 	OUT  0x15,R30
-; 0000 00CC 
-; 0000 00CD // Port D initialization
-; 0000 00CE // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
-; 0000 00CF DDRD=(0<<DDD7) | (0<<DDD6) | (0<<DDD5) | (0<<DDD4) | (0<<DDD3) | (0<<DDD2) | (0<<DDD1) | (0<<DDD0);
+; 0000 00D9 
+; 0000 00DA // Port D initialization
+; 0000 00DB // Function: Bit7=In Bit6=In Bit5=In Bit4=In Bit3=In Bit2=In Bit1=In Bit0=In
+; 0000 00DC DDRD=(0<<DDD7) | (0<<DDD6) | (0<<DDD5) | (0<<DDD4) | (0<<DDD3) | (0<<DDD2) | (0<<DDD1) | (0<<DDD0);
 	OUT  0x11,R30
-; 0000 00D0 // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
-; 0000 00D1 PORTD=(0<<PORTD7) | (0<<PORTD6) | (0<<PORTD5) | (0<<PORTD4) | (0<<PORTD3) | (0<<PORTD2) | (0<<PORTD1) | (0<<PORTD0);
+; 0000 00DD // State: Bit7=T Bit6=T Bit5=T Bit4=T Bit3=T Bit2=T Bit1=T Bit0=T
+; 0000 00DE PORTD=(0<<PORTD7) | (0<<PORTD6) | (0<<PORTD5) | (0<<PORTD4) | (0<<PORTD3) | (0<<PORTD2) | (0<<PORTD1) | (0<<PORTD0);
 	OUT  0x12,R30
-; 0000 00D2 
-; 0000 00D3 // Timer/Counter 0 initialization
-; 0000 00D4 // Clock source: System Clock
-; 0000 00D5 // Clock value: Timer 0 Stopped
-; 0000 00D6 TCCR0=(0<<CS02) | (0<<CS01) | (0<<CS00);
+; 0000 00DF 
+; 0000 00E0 // Timer/Counter 0 initialization
+; 0000 00E1 // Clock source: System Clock
+; 0000 00E2 // Clock value: Timer 0 Stopped
+; 0000 00E3 TCCR0=(0<<CS02) | (0<<CS01) | (0<<CS00);
 	OUT  0x33,R30
-; 0000 00D7 TCNT0=0x00;
+; 0000 00E4 TCNT0=0x00;
 	OUT  0x32,R30
-; 0000 00D8 
-; 0000 00D9 // Timer/Counter 1 initialization
-; 0000 00DA // Clock source: System Clock
-; 0000 00DB // Clock value: Timer1 Stopped
-; 0000 00DC // Mode: Normal top=0xFFFF
-; 0000 00DD // OC1A output: Disconnected
-; 0000 00DE // OC1B output: Disconnected
-; 0000 00DF // Noise Canceler: Off
-; 0000 00E0 // Input Capture on Falling Edge
-; 0000 00E1 // Timer1 Overflow Interrupt: Off
-; 0000 00E2 // Input Capture Interrupt: Off
-; 0000 00E3 // Compare A Match Interrupt: Off
-; 0000 00E4 // Compare B Match Interrupt: Off
-; 0000 00E5 TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
+; 0000 00E5 
+; 0000 00E6 // Timer/Counter 1 initialization
+; 0000 00E7 // Clock source: System Clock
+; 0000 00E8 // Clock value: Timer1 Stopped
+; 0000 00E9 // Mode: Normal top=0xFFFF
+; 0000 00EA // OC1A output: Disconnected
+; 0000 00EB // OC1B output: Disconnected
+; 0000 00EC // Noise Canceler: Off
+; 0000 00ED // Input Capture on Falling Edge
+; 0000 00EE // Timer1 Overflow Interrupt: Off
+; 0000 00EF // Input Capture Interrupt: Off
+; 0000 00F0 // Compare A Match Interrupt: Off
+; 0000 00F1 // Compare B Match Interrupt: Off
+; 0000 00F2 TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
 	OUT  0x2F,R30
-; 0000 00E6 TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (0<<WGM12) | (0<<CS12) | (0<<CS11) | (0<<CS10);
+; 0000 00F3 TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (0<<WGM12) | (0<<CS12) | (0<<CS11) | (0<<CS10);
 	OUT  0x2E,R30
-; 0000 00E7 TCNT1H=0x00;
+; 0000 00F4 TCNT1H=0x00;
 	OUT  0x2D,R30
-; 0000 00E8 TCNT1L=0x00;
+; 0000 00F5 TCNT1L=0x00;
 	OUT  0x2C,R30
-; 0000 00E9 ICR1H=0x00;
+; 0000 00F6 ICR1H=0x00;
 	OUT  0x27,R30
-; 0000 00EA ICR1L=0x00;
+; 0000 00F7 ICR1L=0x00;
 	OUT  0x26,R30
-; 0000 00EB OCR1AH=0x00;
+; 0000 00F8 OCR1AH=0x00;
 	OUT  0x2B,R30
-; 0000 00EC OCR1AL=0x00;
+; 0000 00F9 OCR1AL=0x00;
 	OUT  0x2A,R30
-; 0000 00ED OCR1BH=0x00;
+; 0000 00FA OCR1BH=0x00;
 	OUT  0x29,R30
-; 0000 00EE OCR1BL=0x00;
+; 0000 00FB OCR1BL=0x00;
 	OUT  0x28,R30
-; 0000 00EF 
-; 0000 00F0 // Timer/Counter 2 initialization
-; 0000 00F1 // Clock source: System Clock
-; 0000 00F2 // Clock value: Timer2 Stopped
-; 0000 00F3 // Mode: Normal top=0xFF
-; 0000 00F4 // OC2 output: Disconnected
-; 0000 00F5 ASSR=0<<AS2;
-	OUT  0x22,R30
-; 0000 00F6 TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (0<<CTC2) | (0<<CS22) | (0<<CS21) | (0<<CS20);
-	OUT  0x25,R30
-; 0000 00F7 TCNT2=0x00;
-	OUT  0x24,R30
-; 0000 00F8 OCR2=0x00;
-	OUT  0x23,R30
-; 0000 00F9 
-; 0000 00FA // Timer(s)/Counter(s) Interrupt(s) initialization
-; 0000 00FB TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (0<<OCIE1A) | (0<<OCIE1B) | (0<<TOIE1) | (0<<TOIE0);
-	OUT  0x39,R30
 ; 0000 00FC 
-; 0000 00FD // External Interrupt(s) initialization
-; 0000 00FE // INT0: Off
-; 0000 00FF // INT1: Off
-; 0000 0100 MCUCR=(0<<ISC11) | (0<<ISC10) | (0<<ISC01) | (0<<ISC00);
+; 0000 00FD // Timer/Counter 2 initialization
+; 0000 00FE // Clock source: System Clock
+; 0000 00FF // Clock value: Timer2 Stopped
+; 0000 0100 // Mode: Normal top=0xFF
+; 0000 0101 // OC2 output: Disconnected
+; 0000 0102 ASSR=0<<AS2;
+	OUT  0x22,R30
+; 0000 0103 TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (0<<CTC2) | (0<<CS22) | (0<<CS21) | (0<<CS20);
+	OUT  0x25,R30
+; 0000 0104 TCNT2=0x00;
+	OUT  0x24,R30
+; 0000 0105 OCR2=0x00;
+	OUT  0x23,R30
+; 0000 0106 
+; 0000 0107 // Timer(s)/Counter(s) Interrupt(s) initialization
+; 0000 0108 TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (0<<OCIE1A) | (0<<OCIE1B) | (0<<TOIE1) | (0<<TOIE0);
+	OUT  0x39,R30
+; 0000 0109 
+; 0000 010A // External Interrupt(s) initialization
+; 0000 010B // INT0: Off
+; 0000 010C // INT1: Off
+; 0000 010D MCUCR=(0<<ISC11) | (0<<ISC10) | (0<<ISC01) | (0<<ISC00);
 	OUT  0x35,R30
-; 0000 0101 
-; 0000 0102 // USART initialization
-; 0000 0103 // Communication Parameters: 8 Data, 1 Stop, No Parity
-; 0000 0104 // USART Receiver: On
-; 0000 0105 // USART Transmitter: On
-; 0000 0106 // USART Mode: Asynchronous
-; 0000 0107 // USART Baud Rate: 115200
-; 0000 0108 UCSRA=(0<<RXC) | (0<<TXC) | (0<<UDRE) | (0<<FE) | (0<<DOR) | (0<<UPE) | (0<<U2X) | (0<<MPCM);
+; 0000 010E 
+; 0000 010F // USART initialization
+; 0000 0110 // Communication Parameters: 8 Data, 1 Stop, No Parity
+; 0000 0111 // USART Receiver: On
+; 0000 0112 // USART Transmitter: On
+; 0000 0113 // USART Mode: Asynchronous
+; 0000 0114 // USART Baud Rate: 115200
+; 0000 0115 UCSRA=(0<<RXC) | (0<<TXC) | (0<<UDRE) | (0<<FE) | (0<<DOR) | (0<<UPE) | (0<<U2X) | (0<<MPCM);
 	OUT  0xB,R30
-; 0000 0109 UCSRB=(1<<RXCIE) | (1<<TXCIE) | (0<<UDRIE) | (1<<RXEN) | (1<<TXEN) | (0<<UCSZ2) | (0<<RXB8) | (0<<TXB8);
+; 0000 0116 UCSRB=(1<<RXCIE) | (1<<TXCIE) | (0<<UDRIE) | (1<<RXEN) | (1<<TXEN) | (0<<UCSZ2) | (0<<RXB8) | (0<<TXB8);
 	LDI  R30,LOW(216)
 	OUT  0xA,R30
-; 0000 010A UCSRC=(1<<URSEL) | (0<<UMSEL) | (0<<UPM1) | (0<<UPM0) | (0<<USBS) | (1<<UCSZ1) | (1<<UCSZ0) | (0<<UCPOL);
+; 0000 0117 UCSRC=(1<<URSEL) | (0<<UMSEL) | (0<<UPM1) | (0<<UPM0) | (0<<USBS) | (1<<UCSZ1) | (1<<UCSZ0) | (0<<UCPOL);
 	LDI  R30,LOW(134)
 	OUT  0x20,R30
-; 0000 010B UBRRH=0x00;
+; 0000 0118 UBRRH=0x00;
 	LDI  R30,LOW(0)
 	OUT  0x20,R30
-; 0000 010C UBRRL=0x03;
+; 0000 0119 UBRRL=0x03;
 	LDI  R30,LOW(3)
 	OUT  0x9,R30
-; 0000 010D 
-; 0000 010E // Analog Comparator initialization
-; 0000 010F // Analog Comparator: Off
-; 0000 0110 // The Analog Comparator's positive input is
-; 0000 0111 // connected to the AIN0 pin
-; 0000 0112 // The Analog Comparator's negative input is
-; 0000 0113 // connected to the AIN1 pin
-; 0000 0114 ACSR=(1<<ACD) | (0<<ACBG) | (0<<ACO) | (0<<ACI) | (0<<ACIE) | (0<<ACIC) | (0<<ACIS1) | (0<<ACIS0);
+; 0000 011A 
+; 0000 011B // Analog Comparator initialization
+; 0000 011C // Analog Comparator: Off
+; 0000 011D // The Analog Comparator's positive input is
+; 0000 011E // connected to the AIN0 pin
+; 0000 011F // The Analog Comparator's negative input is
+; 0000 0120 // connected to the AIN1 pin
+; 0000 0121 ACSR=(1<<ACD) | (0<<ACBG) | (0<<ACO) | (0<<ACI) | (0<<ACIE) | (0<<ACIC) | (0<<ACIS1) | (0<<ACIS0);
 	LDI  R30,LOW(128)
 	OUT  0x8,R30
-; 0000 0115 SFIOR=(0<<ACME);
+; 0000 0122 SFIOR=(0<<ACME);
 	LDI  R30,LOW(0)
 	OUT  0x30,R30
-; 0000 0116 
-; 0000 0117 // ADC initialization
-; 0000 0118 // ADC disabled
-; 0000 0119 ADCSRA=(0<<ADEN) | (0<<ADSC) | (0<<ADFR) | (0<<ADIF) | (0<<ADIE) | (0<<ADPS2) | (0<<ADPS1) | (0<<ADPS0);
+; 0000 0123 
+; 0000 0124 // ADC initialization
+; 0000 0125 // ADC disabled
+; 0000 0126 ADCSRA=(0<<ADEN) | (0<<ADSC) | (0<<ADFR) | (0<<ADIF) | (0<<ADIE) | (0<<ADPS2) | (0<<ADPS1) | (0<<ADPS0);
 	OUT  0x6,R30
-; 0000 011A 
-; 0000 011B // SPI initialization
-; 0000 011C // SPI disabled
-; 0000 011D SPCR=(0<<SPIE) | (0<<SPE) | (0<<DORD) | (0<<MSTR) | (0<<CPOL) | (0<<CPHA) | (0<<SPR1) | (0<<SPR0);
+; 0000 0127 
+; 0000 0128 // SPI initialization
+; 0000 0129 // SPI disabled
+; 0000 012A SPCR=(0<<SPIE) | (0<<SPE) | (0<<DORD) | (0<<MSTR) | (0<<CPOL) | (0<<CPHA) | (0<<SPR1) | (0<<SPR0);
 	OUT  0xD,R30
-; 0000 011E 
-; 0000 011F // TWI initialization
-; 0000 0120 // TWI disabled
-; 0000 0121 TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
+; 0000 012B 
+; 0000 012C // TWI initialization
+; 0000 012D // TWI disabled
+; 0000 012E TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
 	OUT  0x36,R30
-; 0000 0122 
-; 0000 0123 // Global enable interrupts
-; 0000 0124 #asm("sei")
+; 0000 012F 
+; 0000 0130 // Global enable interrupts
+; 0000 0131 #asm("sei")
 	sei
-; 0000 0125 
-; 0000 0126 while (1)
+; 0000 0132 
+; 0000 0133 while (1)
 _0x23:
-; 0000 0127       {
-; 0000 0128        _data = getchar();
+; 0000 0134       {
+; 0000 0135        _data = getchar();
 	RCALL _getchar
 	MOV  R19,R30
-; 0000 0129       // Place your code here
-; 0000 012A         //putchar(getchar());
-; 0000 012B         if(_data == 0xFF){
+; 0000 0136       // Place your code here
+; 0000 0137         //putchar(getchar());
+; 0000 0138         if(_data == 255){
 	CPI  R19,255
 	BRNE _0x26
-; 0000 012C            while(_counter < 28){
+; 0000 0139            while(_counter < 28){
 _0x27:
 	__CPWRN 16,17,28
 	BRGE _0x29
-; 0000 012D                 pocket_data[_counter] = getchar();     //   Формируем пакет данных.
+; 0000 013A                 pocket_data[_counter] = getchar();     //   Формируем пакет данных.
 	MOVW R30,R16
 	MOVW R26,R28
-	ADIW R26,10
+	ADIW R26,14
 	ADD  R30,R26
 	ADC  R31,R27
 	PUSH R31
@@ -1712,107 +1760,244 @@ _0x27:
 	POP  R26
 	POP  R27
 	ST   X,R30
-; 0000 012E                 //putchar( pocket_data[_counter]);    //  Пересылаем данные raspberry pi.
-; 0000 012F                 _counter++;
+; 0000 013B                 //putchar( pocket_data[_counter]);    //  Пересылаем данные raspberry pi.
+; 0000 013C                 _counter++;
 	__ADDWRN 16,17,1
-; 0000 0130 
-; 0000 0131                 if(pocket_data[_counter] == 0){
-	RCALL SUBOPT_0x1
-; 0000 0132                     //write_float(pocket_data[_counter]);
-; 0000 0133                     //UDR = pocket_data[_counter];
-; 0000 0134                 }if(_counter == 3){
-	LDI  R30,LOW(3)
-	LDI  R31,HIGH(3)
-	CP   R30,R16
-	CPC  R31,R17
-	BRNE _0x2B
-; 0000 0135                      UDR = pocket_data[_counter];
-	RCALL SUBOPT_0x1
-	LD   R30,X
-	OUT  0xC,R30
-; 0000 0136                 }
-; 0000 0137 
-; 0000 0138            }
-_0x2B:
+; 0000 013D 
+; 0000 013E                 if(pocket_data[_counter] == 0){
+	MOVW R26,R28
+	ADIW R26,14
+	ADD  R26,R16
+	ADC  R27,R17
+; 0000 013F                     //write_float(pocket_data[_counter]);
+; 0000 0140 
+; 0000 0141                 }
+; 0000 0142                 if(_counter == 5){
+; 0000 0143                      //UDR = pocket_data[0];
+; 0000 0144                 }
+; 0000 0145 
+; 0000 0146            }
 	RJMP _0x27
 _0x29:
-; 0000 0139            _counter = 0;
+; 0000 0147            _counter = 0;
 	__GETWRN 16,17,0
-; 0000 013A            pitch_hex[0] = pocket_data[1];
-	LDD  R30,Y+11
-	STD  Y+6,R30
-; 0000 013B            pitch_hex[1] = pocket_data[2];
-	LDD  R30,Y+12
-	STD  Y+7,R30
-; 0000 013C            pitch_hex[2] = pocket_data[3];
-	LDD  R30,Y+13
-	STD  Y+8,R30
-; 0000 013D            pitch_hex[3] = pocket_data[4];
-	LDD  R30,Y+14
-	STD  Y+9,R30
-; 0000 013E 
-; 0000 013F             //x=(float *)pitch_hex;
-; 0000 0140             //UDR = pocket_data[1] + pocket_data[2];
-; 0000 0141            //UDR = write_float(*x);
-; 0000 0142            //send_UART(x);
-; 0000 0143 
-; 0000 0144 
-; 0000 0145 
-; 0000 0146         }
-; 0000 0147 
-; 0000 0148         /*for(_counter = 0; _counter < 28; _counter++){
-; 0000 0149              putchar( pocket_data[_counter]);
-; 0000 014A         }*/
-; 0000 014B 
-; 0000 014C         /*
-; 0000 014D         strcpy(pitch_hex, &pocket_data[0]);
-; 0000 014E         strcpy(pitch_hex, &pocket_data[1]);
-; 0000 014F         strcpy(pitch_hex, &pocket_data[2]);
-; 0000 0150         strcpy(pitch_hex, &pocket_data[3]);
-; 0000 0151         */
-; 0000 0152         //printf(pocket_data[0]);
-; 0000 0153 
-; 0000 0154         /*
-; 0000 0155         _data = getchar();
-; 0000 0156         if(_data == 0xFF && _readingComplete == 1){  //  Находим преамбулу.
-; 0000 0157             _readingComplete = 0;
-; 0000 0158             pocket_data[0] =  _data; // Включаем преамбулу в пакет.
-; 0000 0159             while(_counter < 27){
-; 0000 015A                 pocket_data[_counter] = getchar();  //  Формируем полный пакет.
-; 0000 015B                 putchar(getchar());
-; 0000 015C                 _counter++;
-; 0000 015D                 _readingComplete = 1;
-; 0000 015E             }
-; 0000 015F             _counter = 1;  //   Обнуляем счетчик данных в пакете.
-; 0000 0160             putchar(0);
-; 0000 0161         }  */
-; 0000 0162          //  Достаем необходимые данных из пакета.
-; 0000 0163 
-; 0000 0164         // 3C25C43D == 0.0101
-; 0000 0165 
-; 0000 0166         //send_UART(12.23);
+; 0000 0148            pitch_hex[0] = pocket_data[21];
+	LDD  R30,Y+35
+	STD  Y+10,R30
+; 0000 0149            pitch_hex[1] = pocket_data[22];
+	LDD  R30,Y+36
+	STD  Y+11,R30
+; 0000 014A            pitch_hex[2] = pocket_data[23];
+	LDD  R30,Y+37
+	STD  Y+12,R30
+; 0000 014B            pitch_hex[3] = pocket_data[24];
+	LDD  R30,Y+38
+	STD  Y+13,R30
+; 0000 014C 
+; 0000 014D 
+; 0000 014E 
+; 0000 014F             point_a = &a;
+	__PUTWSR 28,29,4
+; 0000 0150             memcpy(point_a,pitch_hex,4);
+	LDD  R30,Y+4
+	LDD  R31,Y+4+1
+	ST   -Y,R31
+	ST   -Y,R30
+	MOVW R30,R28
+	ADIW R30,12
+	ST   -Y,R31
+	ST   -Y,R30
+	LDI  R26,LOW(4)
+	LDI  R27,0
+	RCALL _memcpy
+; 0000 0151             write_float(floor(a));
+	RCALL SUBOPT_0x1
+	RCALL _floor
+	MOVW R26,R30
+	MOVW R24,R22
+	RCALL _write_float
+; 0000 0152 
+; 0000 0153             a = 0;
+	LDI  R30,LOW(0)
+	RCALL __CLRD1S0
+; 0000 0154 
+; 0000 0155              /*
+; 0000 0156              04 C4 39 7F
+; 0000 0157              D8 3B D5 99
+; 0000 0158              03 3B E3 78
+; 0000 0159              63 3B 85 08
+; 0000 015A             1F 3C E2 C0 F0 BB 79 88 C7 3C 0B 84 88 3C FE 79
+; 0000 015B             16 BD 86 F4 58 BB 10 66 A5 BB 79 F7 A3 BB 49 6A
+; 0000 015C             6B 3C B0 12
+; 0000 015D 
+; 0000 015E              */
+; 0000 015F 
+; 0000 0160 
+; 0000 0161 
+; 0000 0162             //x=(float *)pitch_hex;
+; 0000 0163             //UDR = pocket_data[1] + pocket_data[2];
+; 0000 0164             //  Функция выводит float число в терминал в 16-тиричном формате в инверсном виде.
+; 0000 0165             //  Перевести можно в калькуляторе:  https://gregstoll.dyndns.org/~gregstoll/floattohex/
+; 0000 0166             //write_float(25.365);
 ; 0000 0167 
-; 0000 0168         //uint8_t *pocket_data = (uint8_t *)&pitch_float;
+; 0000 0168             //send_UART(x);
 ; 0000 0169 
-; 0000 016A         //strcat(pitch_hex, (pocket_data[24]));
-; 0000 016B         //pitch_hex=strcat(pocket_data[24]);
-; 0000 016C         //pitch_float = typecast(uint32(hex2dec(pitch_hex)), 'single');
+; 0000 016A 
+; 0000 016B 
+; 0000 016C         }
 ; 0000 016D 
-; 0000 016E 
-; 0000 016F 
-; 0000 0170 
-; 0000 0171              //putchar(getchar());
-; 0000 0172 
-; 0000 0173              //delay_ms(200);
-; 0000 0174       }
+; 0000 016E         /*for(_counter = 0; _counter < 28; _counter++){
+; 0000 016F              putchar( pocket_data[_counter]);
+; 0000 0170         }*/
+; 0000 0171 
+; 0000 0172         /*
+; 0000 0173         strcpy(pitch_hex, &pocket_data[0]);
+; 0000 0174         strcpy(pitch_hex, &pocket_data[1]);
+; 0000 0175         strcpy(pitch_hex, &pocket_data[2]);
+; 0000 0176         strcpy(pitch_hex, &pocket_data[3]);
+; 0000 0177         */
+; 0000 0178         //printf(pocket_data[0]);
+; 0000 0179 
+; 0000 017A         /*
+; 0000 017B         _data = getchar();
+; 0000 017C         if(_data == 0xFF && _readingComplete == 1){  //  Находим преамбулу.
+; 0000 017D             _readingComplete = 0;
+; 0000 017E             pocket_data[0] =  _data; // Включаем преамбулу в пакет.
+; 0000 017F             while(_counter < 27){
+; 0000 0180                 pocket_data[_counter] = getchar();  //  Формируем полный пакет.
+; 0000 0181                 putchar(getchar());
+; 0000 0182                 _counter++;
+; 0000 0183                 _readingComplete = 1;
+; 0000 0184             }
+; 0000 0185             _counter = 1;  //   Обнуляем счетчик данных в пакете.
+; 0000 0186             putchar(0);
+; 0000 0187         }  */
+; 0000 0188          //  Достаем необходимые данных из пакета.
+; 0000 0189 
+; 0000 018A         // 3C25C43D == 0.0101
+; 0000 018B 
+; 0000 018C         //send_UART(12.23);
+; 0000 018D 
+; 0000 018E         //uint8_t *pocket_data = (uint8_t *)&pitch_float;
+; 0000 018F 
+; 0000 0190         //strcat(pitch_hex, (pocket_data[24]));
+; 0000 0191         //pitch_hex=strcat(pocket_data[24]);
+; 0000 0192         //pitch_float = typecast(uint32(hex2dec(pitch_hex)), 'single');
+; 0000 0193 
+; 0000 0194 
+; 0000 0195 
+; 0000 0196 
+; 0000 0197              //putchar(getchar());
+; 0000 0198 
+; 0000 0199              //delay_ms(200);
+; 0000 019A       }
 _0x26:
 	RJMP _0x23
-; 0000 0175 }
+; 0000 019B }
 _0x2C:
 	RJMP _0x2C
 ; .FEND
 
 	.CSEG
+_memcpy:
+; .FSTART _memcpy
+	ST   -Y,R27
+	ST   -Y,R26
+    ldd  r25,y+1
+    ld   r24,y
+    adiw r24,0
+    breq memcpy1
+    ldd  r27,y+5
+    ldd  r26,y+4
+    ldd  r31,y+3
+    ldd  r30,y+2
+memcpy0:
+    ld   r22,z+
+    st   x+,r22
+    sbiw r24,1
+    brne memcpy0
+memcpy1:
+    ldd  r31,y+5
+    ldd  r30,y+4
+	ADIW R28,6
+	RET
+; .FEND
+
+	.CSEG
+_ftrunc:
+; .FSTART _ftrunc
+	RCALL __PUTPARD2
+   ldd  r23,y+3
+   ldd  r22,y+2
+   ldd  r31,y+1
+   ld   r30,y
+   bst  r23,7
+   lsl  r23
+   sbrc r22,7
+   sbr  r23,1
+   mov  r25,r23
+   subi r25,0x7e
+   breq __ftrunc0
+   brcs __ftrunc0
+   cpi  r25,24
+   brsh __ftrunc1
+   clr  r26
+   clr  r27
+   clr  r24
+__ftrunc2:
+   sec
+   ror  r24
+   ror  r27
+   ror  r26
+   dec  r25
+   brne __ftrunc2
+   and  r30,r26
+   and  r31,r27
+   and  r22,r24
+   rjmp __ftrunc1
+__ftrunc0:
+   clt
+   clr  r23
+   clr  r30
+   clr  r31
+   clr  r22
+__ftrunc1:
+   cbr  r22,0x80
+   lsr  r23
+   brcc __ftrunc3
+   sbr  r22,0x80
+__ftrunc3:
+   bld  r23,7
+   ld   r26,y+
+   ld   r27,y+
+   ld   r24,y+
+   ld   r25,y+
+   cp   r30,r26
+   cpc  r31,r27
+   cpc  r22,r24
+   cpc  r23,r25
+   bst  r25,7
+   ret
+; .FEND
+_floor:
+; .FSTART _floor
+	RCALL __PUTPARD2
+	RCALL SUBOPT_0x1
+	RCALL _ftrunc
+	RCALL __PUTD1S0
+    brne __floor1
+__floor0:
+	RCALL SUBOPT_0x2
+	RJMP _0x20A0001
+__floor1:
+    brtc __floor0
+	RCALL SUBOPT_0x2
+	__GETD2N 0x3F800000
+	RCALL __SUBF12
+_0x20A0001:
+	ADIW R28,4
+	RET
+; .FEND
 	#ifndef __SLEEP_DEFINED__
 	#define __SLEEP_DEFINED__
 	.EQU __se_bit=0x80
@@ -1830,10 +2015,18 @@ _0x2C:
 	.CSEG
 
 	.DSEG
+
+	.CSEG
+
+	.CSEG
+
+	.DSEG
 _rx_buffer:
 	.BYTE 0x1C
 _tx_buffer:
 	.BYTE 0x1C
+__seed_G103:
+	.BYTE 0x4
 
 	.CSEG
 ;OPTIMIZER ADDED SUBROUTINE, CALLED 2 TIMES, CODE SIZE REDUCTION:1 WORDS
@@ -1846,17 +2039,243 @@ SUBOPT_0x0:
 
 ;OPTIMIZER ADDED SUBROUTINE, CALLED 2 TIMES, CODE SIZE REDUCTION:1 WORDS
 SUBOPT_0x1:
-	MOVW R26,R28
-	ADIW R26,10
-	ADD  R26,R16
-	ADC  R27,R17
+	RCALL __GETD2S0
+	RET
+
+;OPTIMIZER ADDED SUBROUTINE, CALLED 2 TIMES, CODE SIZE REDUCTION:1 WORDS
+SUBOPT_0x2:
+	RCALL __GETD1S0
 	RET
 
 
 	.CSEG
+__REPACK:
+	LDI  R21,0x80
+	EOR  R21,R23
+	BRNE __REPACK0
+	PUSH R21
+	RJMP __ZERORES
+__REPACK0:
+	CPI  R21,0xFF
+	BREQ __REPACK1
+	LSL  R22
+	LSL  R0
+	ROR  R21
+	ROR  R22
+	MOV  R23,R21
+	RET
+__REPACK1:
+	PUSH R21
+	TST  R0
+	BRMI __REPACK2
+	RJMP __MAXRES
+__REPACK2:
+	RJMP __MINRES
+
+__UNPACK:
+	LDI  R21,0x80
+	MOV  R1,R25
+	AND  R1,R21
+	LSL  R24
+	ROL  R25
+	EOR  R25,R21
+	LSL  R21
+	ROR  R24
+
+__UNPACK1:
+	LDI  R21,0x80
+	MOV  R0,R23
+	AND  R0,R21
+	LSL  R22
+	ROL  R23
+	EOR  R23,R21
+	LSL  R21
+	ROR  R22
+	RET
+
+__SWAPACC:
+	PUSH R20
+	MOVW R20,R30
+	MOVW R30,R26
+	MOVW R26,R20
+	MOVW R20,R22
+	MOVW R22,R24
+	MOVW R24,R20
+	MOV  R20,R0
+	MOV  R0,R1
+	MOV  R1,R20
+	POP  R20
+	RET
+
+__UADD12:
+	ADD  R30,R26
+	ADC  R31,R27
+	ADC  R22,R24
+	RET
+
+__NEGMAN1:
+	COM  R30
+	COM  R31
+	COM  R22
+	SUBI R30,-1
+	SBCI R31,-1
+	SBCI R22,-1
+	RET
+
+__SUBF12:
+	PUSH R21
+	RCALL __UNPACK
+	CPI  R25,0x80
+	BREQ __ADDF129
+	LDI  R21,0x80
+	EOR  R1,R21
+
+__ADDF120:
+	CPI  R23,0x80
+	BREQ __ADDF128
+__ADDF121:
+	MOV  R21,R23
+	SUB  R21,R25
+	BRVS __ADDF1211
+	BRPL __ADDF122
+	RCALL __SWAPACC
+	RJMP __ADDF121
+__ADDF122:
+	CPI  R21,24
+	BRLO __ADDF123
+	CLR  R26
+	CLR  R27
+	CLR  R24
+__ADDF123:
+	CPI  R21,8
+	BRLO __ADDF124
+	MOV  R26,R27
+	MOV  R27,R24
+	CLR  R24
+	SUBI R21,8
+	RJMP __ADDF123
+__ADDF124:
+	TST  R21
+	BREQ __ADDF126
+__ADDF125:
+	LSR  R24
+	ROR  R27
+	ROR  R26
+	DEC  R21
+	BRNE __ADDF125
+__ADDF126:
+	MOV  R21,R0
+	EOR  R21,R1
+	BRMI __ADDF127
+	RCALL __UADD12
+	BRCC __ADDF129
+	ROR  R22
+	ROR  R31
+	ROR  R30
+	INC  R23
+	BRVC __ADDF129
+	RJMP __MAXRES
+__ADDF128:
+	RCALL __SWAPACC
+__ADDF129:
+	RCALL __REPACK
+	POP  R21
+	RET
+__ADDF1211:
+	BRCC __ADDF128
+	RJMP __ADDF129
+__ADDF127:
+	SUB  R30,R26
+	SBC  R31,R27
+	SBC  R22,R24
+	BREQ __ZERORES
+	BRCC __ADDF1210
+	COM  R0
+	RCALL __NEGMAN1
+__ADDF1210:
+	TST  R22
+	BRMI __ADDF129
+	LSL  R30
+	ROL  R31
+	ROL  R22
+	DEC  R23
+	BRVC __ADDF1210
+
+__ZERORES:
+	CLR  R30
+	CLR  R31
+	CLR  R22
+	CLR  R23
+	POP  R21
+	RET
+
+__MINRES:
+	SER  R30
+	SER  R31
+	LDI  R22,0x7F
+	SER  R23
+	POP  R21
+	RET
+
+__MAXRES:
+	SER  R30
+	SER  R31
+	LDI  R22,0x7F
+	LDI  R23,0x7F
+	POP  R21
+	RET
+
+__GETD1S0:
+	LD   R30,Y
+	LDD  R31,Y+1
+	LDD  R22,Y+2
+	LDD  R23,Y+3
+	RET
+
+__GETD2S0:
+	LD   R26,Y
+	LDD  R27,Y+1
+	LDD  R24,Y+2
+	LDD  R25,Y+3
+	RET
+
+__PUTD1S0:
+	ST   Y,R30
+	STD  Y+1,R31
+	STD  Y+2,R22
+	STD  Y+3,R23
+	RET
+
+__CLRD1S0:
+	ST   Y,R30
+	STD  Y+1,R30
+	STD  Y+2,R30
+	STD  Y+3,R30
+	RET
+
+__PUTPARD2:
+	ST   -Y,R25
+	ST   -Y,R24
+	ST   -Y,R27
+	ST   -Y,R26
+	RET
+
+__SAVELOCR4:
+	ST   -Y,R19
+__SAVELOCR3:
+	ST   -Y,R18
 __SAVELOCR2:
 	ST   -Y,R17
 	ST   -Y,R16
+	RET
+
+__LOADLOCR4:
+	LDD  R19,Y+3
+__LOADLOCR3:
+	LDD  R18,Y+2
+__LOADLOCR2:
+	LDD  R17,Y+1
+	LD   R16,Y
 	RET
 
 ;END OF CODE MARKER
