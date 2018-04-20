@@ -32,7 +32,7 @@ PageIndex1=1
 OF2=USART.c
 Active2=1
 EditorPanel2=0
-TimeStamp2=1284342486
+TimeStamp2=1284471723
 PageIndex2=2
 [CompilerDebug]
 Chip=ATmega8
@@ -375,17 +375,17 @@ Row=0
 Column=0
 ScrollPosX=0
 ScrollPosY=0
-TimeStamp=1284342986
+TimeStamp=1284728192
 [BookmarksFoldedCode]
 Files=2
 F1=USART.c
 F2=C:\Users\״טעמג ִלטענטי\Desktop\UART_only.c
 [Bookmarks1]
-TimeStamp=1284342486
-Row=0
-Column=0
+TimeStamp=1284471723
+Row=182
+Column=62
 ScrollPosX=0
-ScrollPosY=0
+ScrollPosY=141
 BK0=-1
 BK1=-1
 BK2=-1
@@ -396,8 +396,6 @@ BK6=-1
 BK7=-1
 BK8=-1
 BK9=-1
-[FoldedCode1]
-Blocks=0
 [Bookmarks2]
 TimeStamp=1284342705
 Row=293
@@ -414,8 +412,6 @@ BK6=-1
 BK7=-1
 BK8=-1
 BK9=-1
-[FoldedCode2]
-Blocks=0
 [HeadersList]
 Files=1
 F1=D:\Electronic\gyrostabilized-platform\app\USART.c
@@ -431,3 +427,7 @@ F7=D:\Program Files\Electronics\CodeVisionAVR\inc\math.h
 F8=D:\Program Files\Electronics\CodeVisionAVR\inc\stdio.h
 F9=D:\Program Files\Electronics\CodeVisionAVR\inc\io.h
 F10=D:\Program Files\Electronics\CodeVisionAVR\inc\stdarg.h
+[FoldedCode1]
+Blocks=0
+[FoldedCode2]
+Blocks=0
